@@ -6,10 +6,7 @@ import {
   updateMedicalRecord,
 } from '../services/record.service';
 
-export const createRecordHandler = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
+export const createRecordHandler = async (req: Request, res: Response): Promise<void> => {
   try {
     const { appointmentId, diagnosis, treatment, notes } = req.body;
 
@@ -30,10 +27,7 @@ export const createRecordHandler = async (
   }
 };
 
-export const getMyRecordsHandler = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
+export const getMyRecordsHandler = async (req: Request, res: Response): Promise<void> => {
   try {
     if (!req.user) {
       res.status(401).json({ message: 'Non autorizzato' });
@@ -51,10 +45,7 @@ export const getMyRecordsHandler = async (
   }
 };
 
-export const getRecordHandler = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
+export const getRecordHandler = async (req: Request, res: Response): Promise<void> => {
   try {
     const id = Number(req.params.id);
 
@@ -72,16 +63,13 @@ export const getRecordHandler = async (
 
     res.status(200).json(record);
     return;
-  } catch (error) {
+  } catch (_error) {
     res.status(500).json({ message: 'Errore recupero referto' });
     return;
   }
 };
 
-export const updateRecordHandler = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
+export const updateRecordHandler = async (req: Request, res: Response): Promise<void> => {
   try {
     const id = Number(req.params.id);
     const { diagnosis, treatment, notes } = req.body;
@@ -99,7 +87,7 @@ export const updateRecordHandler = async (
 
     res.status(200).json(updatedRecord);
     return;
-  } catch (error) {
+  } catch (_error) {
     res.status(400).json({
       message: error instanceof Error ? error.message : 'Errore aggiornamento referto',
     });

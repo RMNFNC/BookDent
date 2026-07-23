@@ -7,11 +7,7 @@ interface JwtPayload {
   role: Role;
 }
 
-export const authenticate = (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): void => {
+export const authenticate = (req: Request, res: Response, next: NextFunction): void => {
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -22,10 +18,7 @@ export const authenticate = (
   const token = authHeader.split(' ')[1];
 
   try {
-    const decoded = jwt.verify(
-      token,
-      process.env.JWT_SECRET as string
-    ) as JwtPayload;
+    const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as JwtPayload;
 
     req.user = {
       userId: decoded.userId,
@@ -33,7 +26,7 @@ export const authenticate = (
     };
 
     next();
-  } catch (error) {
+  } catch (_error) {
     res.status(401).json({ message: 'Token non valido o scaduto' });
     return;
   }

@@ -100,10 +100,7 @@ export const getRecordById = async (id: number) => {
   });
 };
 
-export const updateMedicalRecord = async (
-  id: number,
-  data: UpdateRecordInput
-) => {
+export const updateMedicalRecord = async (id: number, data: UpdateRecordInput) => {
   const record = await prisma.medicalRecord.findUnique({
     where: { id },
   });

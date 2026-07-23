@@ -13,7 +13,7 @@ export const getSlots = async (req: Request, res: Response): Promise<void> => {
     const slots = await getSlotsByDoctor(doctorId);
     res.status(200).json(slots);
     return;
-  } catch (error) {
+  } catch (_error) {
     res.status(500).json({ message: 'Errore nel recupero slot' });
     return;
   }
@@ -32,7 +32,7 @@ export const addSlot = async (req: Request, res: Response): Promise<void> => {
     const slot = await createSlot({ doctorId, date, startTime, endTime });
     res.status(201).json(slot);
     return;
-  } catch (error) {
+  } catch (_error) {
     res.status(400).json({
       message: error instanceof Error ? error.message : 'Errore creazione slot',
     });

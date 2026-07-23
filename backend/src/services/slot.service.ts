@@ -13,19 +13,11 @@ export const getSlotsByDoctor = async (doctorId: number) => {
       doctorId,
       isBooked: false,
     },
-    orderBy: [
-      { date: 'asc' },
-      { startTime: 'asc' },
-    ],
+    orderBy: [{ date: 'asc' }, { startTime: 'asc' }],
   });
 };
 
-export const createSlot = async ({
-  doctorId,
-  date,
-  startTime,
-  endTime,
-}: CreateSlotInput) => {
+export const createSlot = async ({ doctorId, date, startTime, endTime }: CreateSlotInput) => {
   const doctor = await prisma.doctor.findUnique({
     where: { id: doctorId },
   });
@@ -34,12 +26,32 @@ export const createSlot = async ({
     throw new Error('Dentista non trovato');
   }
 
+  const slotDate = new Date(date);
+  const slotStart = new Date(startTime);
+  const slotEnd = new Date(endTime);
+
+  if (
+    Number.isNaN(slotDate.getTime()) ||
+    Number.isNaN(slotStart.getTime()) ||
+    Number.isNaN(slotEnd.getTime())
+  ) {
+    throw new Error('Data o orario non validi');
+  }
+
+  if (slotEnd <= slotStart) {
+    throw new Error('L’orario di fine deve essere successivo all’orario di inizio');
+  }
+
+  if (slotStart <= new Date()) {
+    throw new Error('Non è possibile creare uno slot nel passato');
+  }
+
   return prisma.availabilitySlot.create({
     data: {
       doctorId,
-      date: new Date(date),
-      startTime: new Date(startTime),
-      endTime: new Date(endTime),
+      date: slotDate,
+      startTime: slotStart,
+      endTime: slotEnd,
       isBooked: false,
     },
   });

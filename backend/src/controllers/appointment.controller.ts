@@ -7,10 +7,7 @@ import {
   updateAppointmentStatus,
 } from '../services/appointment.service';
 
-export const createAppointmentHandler = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
+export const createAppointmentHandler = async (req: Request, res: Response): Promise<void> => {
   try {
     if (!req.user) {
       res.status(401).json({ message: 'Non autorizzato' });
@@ -29,7 +26,7 @@ export const createAppointmentHandler = async (
 
     res.status(201).json(appointment);
     return;
-  } catch (error) {
+  } catch (_error) {
     res.status(400).json({
       message: error instanceof Error ? error.message : 'Errore creazione appuntamento',
     });
@@ -37,10 +34,7 @@ export const createAppointmentHandler = async (
   }
 };
 
-export const getMyAppointmentsHandler = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
+export const getMyAppointmentsHandler = async (req: Request, res: Response): Promise<void> => {
   try {
     if (!req.user) {
       res.status(401).json({ message: 'Non autorizzato' });
@@ -58,10 +52,7 @@ export const getMyAppointmentsHandler = async (
   }
 };
 
-export const getAppointmentHandler = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
+export const getAppointmentHandler = async (req: Request, res: Response): Promise<void> => {
   try {
     const id = Number(req.params.id);
 
@@ -79,7 +70,7 @@ export const getAppointmentHandler = async (
 
     res.status(200).json(appointment);
     return;
-  } catch (error) {
+  } catch (_error) {
     res.status(500).json({ message: 'Errore recupero appuntamento' });
     return;
   }

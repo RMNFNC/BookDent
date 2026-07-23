@@ -13,7 +13,12 @@ const router = Router();
 
 router.post('/', authenticate, authorize(Role.DOCTOR), createRecordHandler);
 router.get('/me', authenticate, authorize(Role.PATIENT), getMyRecordsHandler);
-router.get('/:id', authenticate, authorize(Role.PATIENT, Role.DOCTOR, Role.ADMIN), getRecordHandler);
+router.get(
+  '/:id',
+  authenticate,
+  authorize(Role.PATIENT, Role.DOCTOR, Role.ADMIN),
+  getRecordHandler
+);
 router.put('/:id', authenticate, authorize(Role.DOCTOR), updateRecordHandler);
 
 export default router;
