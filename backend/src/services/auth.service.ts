@@ -36,11 +36,9 @@ export const registerUser = async ({ email, password, role }: RegisterInput) => 
     },
   });
 
-  const token = jwt.sign(
-    { userId: user.id, role: user.role },
-    JWT_SECRET,
-    { expiresIn: JWT_EXPIRES_IN }
-  );
+  const token = jwt.sign({ userId: user.id, role: user.role }, JWT_SECRET, {
+    expiresIn: JWT_EXPIRES_IN,
+  });
 
   return {
     user: {
@@ -67,11 +65,9 @@ export const loginUser = async ({ email, password }: LoginInput) => {
     throw new Error('Credenziali non valide');
   }
 
-  const token = jwt.sign(
-    { userId: user.id, role: user.role },
-    JWT_SECRET,
-    { expiresIn: JWT_EXPIRES_IN }
-  );
+  const token = jwt.sign({ userId: user.id, role: user.role }, JWT_SECRET, {
+    expiresIn: JWT_EXPIRES_IN,
+  });
 
   return {
     user: {

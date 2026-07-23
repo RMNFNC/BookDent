@@ -6,7 +6,7 @@ export const getDoctors = async (req: Request, res: Response): Promise<void> => 
     const doctors = await getAllDoctors();
     res.status(200).json(doctors);
     return;
-  } catch (error) {
+  } catch (_error) {
     res.status(500).json({ message: 'Errore nel recupero dentisti' });
     return;
   }
@@ -30,7 +30,7 @@ export const getDoctor = async (req: Request, res: Response): Promise<void> => {
 
     res.status(200).json(doctor);
     return;
-  } catch (error) {
+  } catch (_error) {
     res.status(500).json({ message: 'Errore nel recupero dettaglio dentista' });
     return;
   }

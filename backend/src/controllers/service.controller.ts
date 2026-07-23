@@ -6,7 +6,7 @@ export const getServices = async (req: Request, res: Response): Promise<void> =>
     const services = await getAllServices();
     res.status(200).json(services);
     return;
-  } catch (error) {
+  } catch (_error) {
     res.status(500).json({ message: 'Errore nel recupero prestazioni' });
     return;
   }
@@ -25,10 +25,11 @@ export const createService = async (req: Request, res: Response): Promise<void> 
 
     res.status(201).json(service);
     return;
-  } catch (error) {
+  } catch (_error) {
     res.status(400).json({
       message: error instanceof Error ? error.message : 'Errore creazione prestazione',
     });
     return;
   }
 };
+

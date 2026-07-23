@@ -91,16 +91,16 @@ model Appointment {
   patientId Int
   doctorId  Int
   serviceId Int
-  slotId    Int
+  slotId    Int               @unique
   status    AppointmentStatus @default(PENDING)
   createdAt DateTime          @default(now())
   updatedAt DateTime          @updatedAt
 
-  patient Patient          @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  doctor  Doctor           @relation(fields: [doctorId], references: [id], onDelete: Cascade)
-  service DentalService    @relation(fields: [serviceId], references: [id], onDelete: Restrict)
-  slot    AvailabilitySlot @relation(fields: [slotId], references: [id], onDelete: Restrict)
-  record  MedicalRecord?
+  patient       Patient          @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  doctor        Doctor           @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  service       DentalService    @relation(fields: [serviceId], references: [id], onDelete: Restrict)
+  slot          AvailabilitySlot @relation(fields: [slotId], references: [id], onDelete: Restrict)
+  medicalRecord MedicalRecord?
 
   @@index([patientId])
   @@index([doctorId])

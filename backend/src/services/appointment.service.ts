@@ -34,27 +34,45 @@ export const createAppointment = async ({
     throw new Error('Slot già prenotato');
   }
 
-  const appointment = await prisma.appointment.create({
-    data: {
-      patientId,
-      doctorId,
-      serviceId,
-      slotId,
-      status: AppointmentStatus.PENDING,
-    },
-    include: {
-      patient: true,
-      doctor: {
-        include: {
-          user: {
-            select: { id: true, email: true },
+  const appointment = await prisma.$transaction(async (tx) => {
+    const updatedSlot = await tx.availabilitySlot.updateMany({
+      where: {
+        id: slotId,
+        isBooked: false,
+      },
+      data: {
+        isBooked: true,
+      },
+    });
+
+    if (updatedSlot.count === 0) {
+      throw new Error('Slot già prenotato');
+    }
+
+    return tx.appointment.create({
+      data: {
+        patientId,
+        doctorId,
+        serviceId,
+        slotId,
+        status: AppointmentStatus.PENDING,
+      },
+      include: {
+        patient: true,
+        doctor: {
+          include: {
+            user: {
+              select: { id: true, email: true },
+            },
           },
         },
+        service: true,
+        slot: true,
       },
-      service: true,
-      slot: true,
-    },
+    });
   });
+
+  return appointment;
 
   await prisma.availabilitySlot.update({
     where: { id: slotId },
@@ -111,34 +129,40 @@ export const getAppointmentById = async (id: number) => {
   });
 };
 
-export const updateAppointmentStatus = async (
-  id: number,
-  status: AppointmentStatus
-) => {
+export const updateAppointmentStatus = async (id: number, status: AppointmentStatus) => {
   const appointment = await prisma.appointment.findUnique({
     where: { id },
-    include: { slot: true },
   });
 
-  if (!appointment) throw new Error('Appuntamento non trovato');
-
-  const updated = await prisma.appointment.update({
-    where: { id },
-    data: { status },
-    include: {
-      patient: true,
-      doctor: { include: { user: { select: { id: true, email: true } } } },
-      service: true,
-      slot: true,
-    },
-  });
-
-  if (status === AppointmentStatus.CANCELLED) {
-    await prisma.availabilitySlot.update({
-      where: { id: appointment.slotId },
-      data: { isBooked: false },
-    });
+  if (!appointment) {
+    throw new Error('Appuntamento non trovato');
   }
 
-  return updated;
+  return prisma.$transaction(async (tx) => {
+    const updatedAppointment = await tx.appointment.update({
+      where: { id },
+      data: { status },
+      include: {
+        patient: true,
+        doctor: {
+          include: {
+            user: {
+              select: { id: true, email: true },
+            },
+          },
+        },
+        service: true,
+        slot: true,
+      },
+    });
+
+    if (status === AppointmentStatus.CANCELLED) {
+      await tx.availabilitySlot.update({
+        where: { id: appointment.slotId },
+        data: { isBooked: false },
+      });
+    }
+
+    return updatedAppointment;
+  });
 };
