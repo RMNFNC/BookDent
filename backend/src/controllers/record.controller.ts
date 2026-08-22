@@ -19,9 +19,9 @@ export const createRecordHandler = async (req: Request, res: Response): Promise<
 
     res.status(201).json(record);
     return;
-  } catch (error) {
+  } catch (_error) {
     res.status(400).json({
-      message: error instanceof Error ? error.message : 'Errore creazione referto',
+      message: _error instanceof Error ? _error.message : 'Errore creazione referto',
     });
     return;
   }
@@ -37,9 +37,9 @@ export const getMyRecordsHandler = async (req: Request, res: Response): Promise<
     const records = await getMyRecords(req.user.userId, req.user.role);
     res.status(200).json(records);
     return;
-  } catch (error) {
+  } catch (_error) {
     res.status(400).json({
-      message: error instanceof Error ? error.message : 'Errore recupero referti',
+      message: _error instanceof Error ? _error.message : 'Errore recupero referti',
     });
     return;
   }
@@ -89,7 +89,7 @@ export const updateRecordHandler = async (req: Request, res: Response): Promise<
     return;
   } catch (_error) {
     res.status(400).json({
-      message: error instanceof Error ? error.message : 'Errore aggiornamento referto',
+      message: _error instanceof Error ? _error.message : 'Errore aggiornamento referto',
     });
     return;
   }

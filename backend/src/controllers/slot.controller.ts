@@ -34,7 +34,7 @@ export const addSlot = async (req: Request, res: Response): Promise<void> => {
     return;
   } catch (_error) {
     res.status(400).json({
-      message: error instanceof Error ? error.message : 'Errore creazione slot',
+      message: _error instanceof Error ? _error.message : 'Errore creazione slot',
     });
     return;
   }
@@ -53,9 +53,9 @@ export const removeSlot = async (req: Request, res: Response): Promise<void> => 
     await deleteSlot(slotId, doctorId);
     res.status(200).json({ message: 'Slot eliminato con successo' });
     return;
-  } catch (error) {
+  } catch (_error) {
     res.status(400).json({
-      message: error instanceof Error ? error.message : 'Errore eliminazione slot',
+      message: _error instanceof Error ? _error.message : 'Errore eliminazione slot',
     });
     return;
   }

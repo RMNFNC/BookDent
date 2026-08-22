@@ -27,7 +27,7 @@ export const createService = async (req: Request, res: Response): Promise<void> 
     return;
   } catch (_error) {
     res.status(400).json({
-      message: error instanceof Error ? error.message : 'Errore creazione prestazione',
+      message: _error instanceof Error ? _error.message : 'Errore creazione prestazione',
     });
     return;
   }

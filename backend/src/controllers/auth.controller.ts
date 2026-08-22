@@ -14,9 +14,9 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 
     res.status(201).json(result);
     return;
-  } catch (error) {
+  } catch (_error) {
     res.status(400).json({
-      message: error instanceof Error ? error.message : 'Errore registrazione',
+      message: _error instanceof Error ? _error.message : 'Errore registrazione',
     });
     return;
   }
@@ -30,9 +30,9 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 
     res.status(200).json(result);
     return;
-  } catch (error) {
+  } catch (_error) {
     res.status(401).json({
-      message: error instanceof Error ? error.message : 'Errore login',
+      message: _error instanceof Error ? _error.message : 'Errore login',
     });
     return;
   }
