@@ -28,7 +28,7 @@ export const createAppointmentHandler = async (req: Request, res: Response): Pro
     return;
   } catch (_error) {
     res.status(400).json({
-      message: error instanceof Error ? error.message : 'Errore creazione appuntamento',
+      message: _error instanceof Error ? _error.message : 'Errore creazione appuntamento',
     });
     return;
   }
@@ -44,9 +44,9 @@ export const getMyAppointmentsHandler = async (req: Request, res: Response): Pro
     const appointments = await getMyAppointments(req.user.userId, req.user.role);
     res.status(200).json(appointments);
     return;
-  } catch (error) {
+  } catch (_error) {
     res.status(400).json({
-      message: error instanceof Error ? error.message : 'Errore recupero appuntamenti',
+      message: _error instanceof Error ? _error.message : 'Errore recupero appuntamenti',
     });
     return;
   }
@@ -103,9 +103,9 @@ export const updateAppointmentStatusHandler = async (
     const updatedAppointment = await updateAppointmentStatus(id, status);
     res.status(200).json(updatedAppointment);
     return;
-  } catch (error) {
+  } catch (_error) {
     res.status(400).json({
-      message: error instanceof Error ? error.message : 'Errore aggiornamento stato',
+      message: _error instanceof Error ? _error.message : 'Errore aggiornamento stato',
     });
     return;
   }

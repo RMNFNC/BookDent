@@ -46,6 +46,31 @@ export const createSlot = async ({ doctorId, date, startTime, endTime }: CreateS
     throw new Error('Non è possibile creare uno slot nel passato');
   }
 
+  const overlappingSlot = await prisma.availabilitySlot.findFirst({
+  where: {
+    doctorId,
+    date: slotDate,
+    AND: [
+      {
+        startTime: {
+          lt: slotEnd,
+        },
+      },
+      {
+        endTime: {
+          gt: slotStart,
+        },
+      },
+    ],
+  },
+});
+
+if (overlappingSlot) {
+  throw new Error(
+    'Esiste già uno slot che si sovrappone a questo orario'
+  );
+}
+
   return prisma.availabilitySlot.create({
     data: {
       doctorId,
