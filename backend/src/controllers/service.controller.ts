@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { Role } from '@prisma/client';
 import {
   getAllServices,
   createDentalService,
@@ -7,7 +8,8 @@ import {
 
 export const getServices = async (req: Request, res: Response): Promise<void> => {
   try {
-    const services = await getAllServices();
+    const includeInactive = req.user?.role === Role.ADMIN;
+    const services = await getAllServices(includeInactive);
     res.status(200).json(services);
     return;
   } catch (_error) {

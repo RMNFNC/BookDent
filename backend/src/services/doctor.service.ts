@@ -11,9 +11,9 @@ interface CreateDoctorInput {
   bio?: string;
 }
 
-export const getAllDoctors = async () => {
+export const getAllDoctors = async (includeInactive = false) => {
   return prisma.doctor.findMany({
-    where: { isActive: true },
+    where: includeInactive ? {} : { isActive: true },
     include: {
       user: {
         select: {
