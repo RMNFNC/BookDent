@@ -1,11 +1,12 @@
 import { prisma } from '../config/prisma';
-import { Role } from '@prisma/client';
+import { AppointmentStatus, Role } from '@prisma/client';
 
 interface CreateRecordInput {
   appointmentId: number;
   diagnosis: string;
   treatment: string;
   notes?: string;
+  doctorUserId: number;
 }
 
 interface UpdateRecordInput {
@@ -19,12 +20,22 @@ export const createMedicalRecord = async ({
   diagnosis,
   treatment,
   notes,
+  doctorUserId,
 }: CreateRecordInput) => {
   const appointment = await prisma.appointment.findUnique({
     where: { id: appointmentId },
+    include: { doctor: true },
   });
 
   if (!appointment) throw new Error('Appuntamento non trovato');
+
+  if (appointment.doctor.userId !== doctorUserId) {
+    throw new Error('Non sei il dentista assegnato a questo appuntamento');
+  }
+
+  if (appointment.status !== AppointmentStatus.COMPLETED) {
+    throw new Error('Il referto può essere creato solo per appuntamenti completati');
+  }
 
   const existingRecord = await prisma.medicalRecord.findUnique({
     where: { appointmentId },
@@ -100,12 +111,21 @@ export const getRecordById = async (id: number) => {
   });
 };
 
-export const updateMedicalRecord = async (id: number, data: UpdateRecordInput) => {
+export const updateMedicalRecord = async (
+  id: number,
+  data: UpdateRecordInput,
+  doctorUserId: number
+) => {
   const record = await prisma.medicalRecord.findUnique({
     where: { id },
+    include: { appointment: { include: { doctor: true } } },
   });
 
   if (!record) throw new Error('Referto non trovato');
+
+  if (record.appointment.doctor.userId !== doctorUserId) {
+    throw new Error('Non sei il dentista assegnato a questo referto');
+  }
 
   return prisma.medicalRecord.update({
     where: { id },

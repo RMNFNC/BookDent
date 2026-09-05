@@ -1,6 +1,8 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import swaggerUi from 'swagger-ui-express';
+import { swaggerSpec } from './config/swagger';
 import authRouter from './routes/auth.routes';
 import userRouter from './routes/user.routes';
 import serviceRouter from './routes/service.routes';
@@ -19,6 +21,8 @@ app.use(express.json());
 app.get('/api/health', (req, res) => {
   res.json({ status: 'DentalCare API running' });
 });
+
+app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.use('/api/auth', authRouter);
 app.use('/api/users', userRouter);
