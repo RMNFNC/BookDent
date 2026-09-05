@@ -21,6 +21,11 @@ export const getSlots = async (req: Request, res: Response): Promise<void> => {
 
 export const addSlot = async (req: Request, res: Response): Promise<void> => {
   try {
+    if (!req.user) {
+      res.status(401).json({ message: 'Non autorizzato' });
+      return;
+    }
+
     const doctorId = Number(req.params.id);
     const { date, startTime, endTime } = req.body;
 
@@ -29,7 +34,13 @@ export const addSlot = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    const slot = await createSlot({ doctorId, date, startTime, endTime });
+    const slot = await createSlot({
+      doctorId,
+      date,
+      startTime,
+      endTime,
+      actingUser: { userId: req.user.userId, role: req.user.role },
+    });
     res.status(201).json(slot);
     return;
   } catch (_error) {
@@ -42,6 +53,11 @@ export const addSlot = async (req: Request, res: Response): Promise<void> => {
 
 export const removeSlot = async (req: Request, res: Response): Promise<void> => {
   try {
+    if (!req.user) {
+      res.status(401).json({ message: 'Non autorizzato' });
+      return;
+    }
+
     const doctorId = Number(req.params.id);
     const slotId = Number(req.params.slotId);
 
@@ -50,7 +66,7 @@ export const removeSlot = async (req: Request, res: Response): Promise<void> => 
       return;
     }
 
-    await deleteSlot(slotId, doctorId);
+    await deleteSlot(slotId, doctorId, { userId: req.user.userId, role: req.user.role });
     res.status(200).json({ message: 'Slot eliminato con successo' });
     return;
   } catch (_error) {

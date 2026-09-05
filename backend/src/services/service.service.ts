@@ -9,6 +9,7 @@ interface CreateServiceInput {
 
 export const getAllServices = async () => {
   return prisma.dentalService.findMany({
+    where: { isActive: true },
     orderBy: {
       id: 'asc',
     },
@@ -36,5 +37,33 @@ export const createDentalService = async ({
       durationMin,
       price,
     },
+  });
+};
+
+interface UpdateServiceInput {
+  name?: string;
+  description?: string;
+  durationMin?: number;
+  price?: number;
+  isActive?: boolean;
+}
+
+export const updateDentalService = async (id: number, data: UpdateServiceInput) => {
+  const service = await prisma.dentalService.findUnique({ where: { id } });
+  if (!service) throw new Error('Prestazione non trovata');
+
+  if (data.name) {
+    const existingService = await prisma.dentalService.findUnique({
+      where: { name: data.name },
+    });
+
+    if (existingService && existingService.id !== id) {
+      throw new Error('Esiste già un’altra prestazione con questo nome');
+    }
+  }
+
+  return prisma.dentalService.update({
+    where: { id },
+    data,
   });
 };

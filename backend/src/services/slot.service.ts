@@ -1,11 +1,32 @@
 import { prisma } from '../config/prisma';
+import { Role } from '@prisma/client';
+
+interface ActingUser {
+  userId: number;
+  role: Role;
+}
 
 interface CreateSlotInput {
   doctorId: number;
   date: string;
   startTime: string;
   endTime: string;
+  actingUser: ActingUser;
 }
+
+interface SearchAvailabilityInput {
+  serviceId: number;
+  date: string;
+}
+
+const assertDoctorOwnership = async (doctorId: number, actingUser: ActingUser) => {
+  if (actingUser.role !== Role.DOCTOR) return;
+
+  const doctor = await prisma.doctor.findUnique({ where: { userId: actingUser.userId } });
+  if (!doctor || doctor.id !== doctorId) {
+    throw new Error('Non sei autorizzato a gestire il calendario di questo dentista');
+  }
+};
 
 export const getSlotsByDoctor = async (doctorId: number) => {
   return prisma.availabilitySlot.findMany({
@@ -17,7 +38,15 @@ export const getSlotsByDoctor = async (doctorId: number) => {
   });
 };
 
-export const createSlot = async ({ doctorId, date, startTime, endTime }: CreateSlotInput) => {
+export const createSlot = async ({
+  doctorId,
+  date,
+  startTime,
+  endTime,
+  actingUser,
+}: CreateSlotInput) => {
+  await assertDoctorOwnership(doctorId, actingUser);
+
   const doctor = await prisma.doctor.findUnique({
     where: { id: doctorId },
   });
@@ -47,29 +76,16 @@ export const createSlot = async ({ doctorId, date, startTime, endTime }: CreateS
   }
 
   const overlappingSlot = await prisma.availabilitySlot.findFirst({
-  where: {
-    doctorId,
-    date: slotDate,
-    AND: [
-      {
-        startTime: {
-          lt: slotEnd,
-        },
-      },
-      {
-        endTime: {
-          gt: slotStart,
-        },
-      },
-    ],
-  },
-});
+    where: {
+      doctorId,
+      date: slotDate,
+      AND: [{ startTime: { lt: slotEnd } }, { endTime: { gt: slotStart } }],
+    },
+  });
 
-if (overlappingSlot) {
-  throw new Error(
-    'Esiste già uno slot che si sovrappone a questo orario'
-  );
-}
+  if (overlappingSlot) {
+    throw new Error('Esiste già uno slot che si sovrappone a questo orario');
+  }
 
   return prisma.availabilitySlot.create({
     data: {
@@ -82,7 +98,40 @@ if (overlappingSlot) {
   });
 };
 
-export const deleteSlot = async (slotId: number, doctorId: number) => {
+export const searchAvailableSlots = async ({ serviceId, date }: SearchAvailabilityInput) => {
+  const service = await prisma.dentalService.findUnique({ where: { id: serviceId } });
+  if (!service) throw new Error('Prestazione non trovata');
+  if (!service.isActive) throw new Error('Prestazione non disponibile');
+
+  const slotDate = new Date(date);
+  if (Number.isNaN(slotDate.getTime())) {
+    throw new Error('Data non valida');
+  }
+
+  const requiredDurationMs = (service.durationMin ?? 0) * 60 * 1000;
+
+  const slots = await prisma.availabilitySlot.findMany({
+    where: {
+      date: slotDate,
+      isBooked: false,
+      doctor: { isActive: true },
+    },
+    include: {
+      doctor: {
+        select: { id: true, firstName: true, lastName: true, specialization: true },
+      },
+    },
+    orderBy: [{ startTime: 'asc' }, { doctorId: 'asc' }],
+  });
+
+  return slots.filter(
+    (slot) => slot.endTime.getTime() - slot.startTime.getTime() >= requiredDurationMs
+  );
+};
+
+export const deleteSlot = async (slotId: number, doctorId: number, actingUser: ActingUser) => {
+  await assertDoctorOwnership(doctorId, actingUser);
+
   const slot = await prisma.availabilitySlot.findUnique({
     where: { id: slotId },
   });

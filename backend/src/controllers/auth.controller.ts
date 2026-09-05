@@ -1,15 +1,18 @@
 import { Request, Response } from 'express';
-import { registerUser, loginUser } from '../services/auth.service';
-import { Role } from '@prisma/client';
+import { registerUser, loginUser, refreshAccessToken } from '../services/auth.service';
 
 export const register = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { email, password, role } = req.body;
+    const { email, password, firstName, lastName, codiceFiscale, dateOfBirth, phone } = req.body;
 
     const result = await registerUser({
       email,
       password,
-      role: role as Role,
+      firstName,
+      lastName,
+      codiceFiscale,
+      dateOfBirth,
+      phone,
     });
 
     res.status(201).json(result);
@@ -33,6 +36,22 @@ export const login = async (req: Request, res: Response): Promise<void> => {
   } catch (_error) {
     res.status(401).json({
       message: _error instanceof Error ? _error.message : 'Errore login',
+    });
+    return;
+  }
+};
+
+export const refresh = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { refreshToken } = req.body;
+
+    const result = await refreshAccessToken(refreshToken);
+
+    res.status(200).json(result);
+    return;
+  } catch (_error) {
+    res.status(401).json({
+      message: _error instanceof Error ? _error.message : 'Errore refresh token',
     });
     return;
   }

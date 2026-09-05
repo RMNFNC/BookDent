@@ -2,84 +2,107 @@ import { prisma } from '../config/prisma';
 import { AppointmentStatus, Role } from '@prisma/client';
 
 interface CreateAppointmentInput {
-  patientId: number;
-  doctorId: number;
+  userId: number;
   serviceId: number;
-  slotId: number;
+  date: string;
+  startTime: string;
 }
 
-export const createAppointment = async ({
-  patientId,
-  doctorId,
-  serviceId,
-  slotId,
-}: CreateAppointmentInput) => {
-  const patient = await prisma.patient.findUnique({ where: { id: patientId } });
-  if (!patient) throw new Error('Paziente non trovato');
+const SLOT_TAKEN = 'SLOT_TAKEN';
 
-  const doctor = await prisma.doctor.findUnique({ where: { id: doctorId } });
-  if (!doctor) throw new Error('Dentista non trovato');
+export const createAppointment = async ({
+  userId,
+  serviceId,
+  date,
+  startTime,
+}: CreateAppointmentInput) => {
+  const patient = await prisma.patient.findUnique({ where: { userId } });
+  if (!patient) throw new Error('Profilo paziente non trovato');
 
   const service = await prisma.dentalService.findUnique({ where: { id: serviceId } });
   if (!service) throw new Error('Prestazione non trovata');
+  if (!service.isActive) throw new Error('Prestazione non disponibile');
 
-  const slot = await prisma.availabilitySlot.findUnique({ where: { id: slotId } });
-  if (!slot) throw new Error('Slot non trovato');
+  const slotDate = new Date(date);
+  const requestedStart = new Date(startTime);
 
-  if (slot.doctorId !== doctorId) {
-    throw new Error('Lo slot non appartiene al dentista selezionato');
+  if (Number.isNaN(slotDate.getTime()) || Number.isNaN(requestedStart.getTime())) {
+    throw new Error('Data o orario non validi');
   }
 
-  if (slot.isBooked) {
-    throw new Error('Slot già prenotato');
+  const requiredDurationMs = (service.durationMin ?? 0) * 60 * 1000;
+
+  // Auto-assign: il paziente non sceglie il dentista, il sistema cerca fra
+  // tutti i dentisti attivi uno slot libero a quella data/ora con durata
+  // sufficiente per la prestazione richiesta.
+  const candidateSlots = await prisma.availabilitySlot.findMany({
+    where: {
+      date: slotDate,
+      startTime: requestedStart,
+      isBooked: false,
+      doctor: { isActive: true },
+    },
+    orderBy: { doctorId: 'asc' },
+  });
+
+  const eligibleSlots = candidateSlots.filter(
+    (slot) => slot.endTime.getTime() - slot.startTime.getTime() >= requiredDurationMs
+  );
+
+  if (eligibleSlots.length === 0) {
+    throw new Error('Nessun dentista disponibile per l’orario selezionato');
   }
 
-  const appointment = await prisma.$transaction(async (tx) => {
-    const updatedSlot = await tx.availabilitySlot.updateMany({
-      where: {
-        id: slotId,
-        isBooked: false,
-      },
-      data: {
-        isBooked: true,
-      },
-    });
-
-    if (updatedSlot.count === 0) {
-      throw new Error('Slot già prenotato');
-    }
-
-    return tx.appointment.create({
-      data: {
-        patientId,
-        doctorId,
-        serviceId,
-        slotId,
-        status: AppointmentStatus.PENDING,
-      },
-      include: {
-        patient: true,
-        doctor: {
-          include: {
-            user: {
-              select: { id: true, email: true },
-            },
+  for (const slot of eligibleSlots) {
+    try {
+      const appointment = await prisma.$transaction(async (tx) => {
+        const updatedSlot = await tx.availabilitySlot.updateMany({
+          where: {
+            id: slot.id,
+            isBooked: false,
           },
-        },
-        service: true,
-        slot: true,
-      },
-    });
-  });
+          data: {
+            isBooked: true,
+          },
+        });
 
-  return appointment;
+        if (updatedSlot.count === 0) {
+          throw new Error(SLOT_TAKEN);
+        }
 
-  await prisma.availabilitySlot.update({
-    where: { id: slotId },
-    data: { isBooked: true },
-  });
+        return tx.appointment.create({
+          data: {
+            patientId: patient.id,
+            doctorId: slot.doctorId,
+            serviceId,
+            slotId: slot.id,
+            status: AppointmentStatus.PENDING,
+          },
+          include: {
+            patient: true,
+            doctor: {
+              include: {
+                user: {
+                  select: { id: true, email: true },
+                },
+              },
+            },
+            service: true,
+            slot: true,
+          },
+        });
+      });
 
-  return appointment;
+      return appointment;
+    } catch (error) {
+      if (error instanceof Error && error.message === SLOT_TAKEN) {
+        continue;
+      }
+      throw error;
+    }
+  }
+
+  throw new Error('Nessun dentista disponibile per l’orario selezionato');
 };
 
 export const getMyAppointments = async (userId: number, role: Role) => {
@@ -116,6 +139,18 @@ export const getMyAppointments = async (userId: number, role: Role) => {
   throw new Error('Ruolo non autorizzato per questa route');
 };
 
+export const getAllAppointments = async () => {
+  return prisma.appointment.findMany({
+    include: {
+      patient: true,
+      doctor: { include: { user: { select: { id: true, email: true } } } },
+      service: true,
+      slot: true,
+    },
+    orderBy: { id: 'desc' },
+  });
+};
+
 export const getAppointmentById = async (id: number) => {
   return prisma.appointment.findUnique({
     where: { id },
@@ -129,17 +164,47 @@ export const getAppointmentById = async (id: number) => {
   });
 };
 
-export const updateAppointmentStatus = async (id: number, status: AppointmentStatus) => {
+export const updateAppointmentStatus = async (
+  id: number,
+  status: AppointmentStatus,
+  actingUser: { userId: number; role: Role }
+) => {
   const appointment = await prisma.appointment.findUnique({
     where: { id },
+    include: { doctor: true, patient: true },
   });
 
   if (!appointment) {
     throw new Error('Appuntamento non trovato');
   }
 
+  if (actingUser.role === Role.DOCTOR && appointment.doctor.userId !== actingUser.userId) {
+    throw new Error('Non sei il dentista assegnato a questo appuntamento');
+  }
+
+  if (actingUser.role === Role.PATIENT) {
+    if (appointment.patient.userId !== actingUser.userId) {
+      throw new Error('Non puoi modificare un appuntamento di un altro paziente');
+    }
+
+    if (status !== AppointmentStatus.CANCELLED) {
+      throw new Error('Il paziente può solo cancellare un appuntamento');
+    }
+
+    if (appointment.status === AppointmentStatus.COMPLETED) {
+      throw new Error('Impossibile cancellare un appuntamento già completato');
+    }
+  }
+
   return prisma.$transaction(async (tx) => {
-    const updatedAppointment = await tx.appointment.update({
+    if (status === AppointmentStatus.CANCELLED) {
+      await tx.availabilitySlot.update({
+        where: { id: appointment.slotId },
+        data: { isBooked: false },
+      });
+    }
+
+    return tx.appointment.update({
       where: { id },
       data: { status },
       include: {
@@ -155,14 +220,5 @@ export const updateAppointmentStatus = async (id: number, status: AppointmentSta
         slot: true,
       },
     });
-
-    if (status === AppointmentStatus.CANCELLED) {
-      await tx.availabilitySlot.update({
-        where: { id: appointment.slotId },
-        data: { isBooked: false },
-      });
-    }
-
-    return updatedAppointment;
   });
 };
