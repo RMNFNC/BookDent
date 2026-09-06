@@ -15,6 +15,12 @@ export const getMe = async (req: Request, res: Response): Promise<void> => {
         email: true,
         role: true,
         createdAt: true,
+        patient: {
+          select: { id: true, firstName: true, lastName: true },
+        },
+        doctor: {
+          select: { id: true, firstName: true, lastName: true, specialization: true },
+        },
       },
     });
 

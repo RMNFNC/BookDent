@@ -7,9 +7,9 @@ interface CreateServiceInput {
   price?: number;
 }
 
-export const getAllServices = async () => {
+export const getAllServices = async (includeInactive = false) => {
   return prisma.dentalService.findMany({
-    where: { isActive: true },
+    where: includeInactive ? {} : { isActive: true },
     orderBy: {
       id: 'asc',
     },

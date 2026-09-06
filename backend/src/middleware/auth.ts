@@ -31,3 +31,26 @@ export const authenticate = (req: Request, res: Response, next: NextFunction): v
     return;
   }
 };
+
+// Popola req.user se è presente un token valido, ma non blocca la richiesta
+// in caso contrario: usato dalle rotte pubbliche che mostrano più dati
+// quando il chiamante è autenticato (es. ADMIN vede anche le risorse disattivate).
+export const optionalAuthenticate = (req: Request, _res: Response, next: NextFunction): void => {
+  const authHeader = req.headers.authorization;
+
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    const token = authHeader.split(' ')[1];
+
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as JwtPayload;
+      req.user = {
+        userId: decoded.userId,
+        role: decoded.role,
+      };
+    } catch (_error) {
+      // token assente/non valido: si prosegue come utente anonimo
+    }
+  }
+
+  next();
+};

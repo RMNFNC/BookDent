@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { getServices, createService, editService } from '../controllers/service.controller';
-import { authenticate } from '../middleware/auth';
+import { authenticate, optionalAuthenticate } from '../middleware/auth';
 import { authorize } from '../middleware/authorize';
 import { validate } from '../middleware/validate';
 import { Role } from '@prisma/client';
@@ -28,7 +28,7 @@ const updateServiceSchema = z.object({
  * /services:
  *   get:
  *     tags: [Services]
- *     summary: Elenco prestazioni attive
+ *     summary: Elenco prestazioni attive (un ADMIN autenticato vede anche quelle disattivate)
  *     security: []
  *     responses:
  *       200: { description: Elenco prestazioni }
@@ -51,7 +51,7 @@ const updateServiceSchema = z.object({
  *       201: { description: Prestazione creata }
  *       403: { description: Accesso negato }
  */
-router.get('/', getServices);
+router.get('/', optionalAuthenticate, getServices);
 router.post('/', authenticate, authorize(Role.ADMIN), validate(createServiceSchema), createService);
 
 /**

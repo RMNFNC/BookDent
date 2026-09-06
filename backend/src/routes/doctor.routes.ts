@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { Role } from '@prisma/client';
 import { getDoctors, getDoctor, addDoctor, editDoctor } from '../controllers/doctor.controller';
-import { authenticate } from '../middleware/auth';
+import { authenticate, optionalAuthenticate } from '../middleware/auth';
 import { authorize } from '../middleware/authorize';
 import { validate } from '../middleware/validate';
 import slotRouter from './slot.routes';
@@ -31,7 +31,7 @@ const updateDoctorSchema = z.object({
  * /doctors:
  *   get:
  *     tags: [Doctors]
- *     summary: Elenco dentisti attivi
+ *     summary: Elenco dentisti attivi (un ADMIN autenticato vede anche quelli disattivati)
  *     security: []
  *     responses:
  *       200: { description: Elenco dentisti }
@@ -56,7 +56,7 @@ const updateDoctorSchema = z.object({
  *       201: { description: Dentista creato }
  *       403: { description: Accesso negato }
  */
-router.get('/', getDoctors);
+router.get('/', optionalAuthenticate, getDoctors);
 
 /**
  * @openapi
