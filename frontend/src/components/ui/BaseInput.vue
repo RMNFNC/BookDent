@@ -68,6 +68,7 @@ const describedBy = computed(() => (props.error ? `${inputId}-error` : undefined
 }
 
 .field__input {
+  width: 100%;
   height: 46px;
   padding: 0 14px;
   border-radius: var(--radius-sm);

@@ -57,6 +57,7 @@ const textareaId = useId();
 }
 
 .field__textarea {
+  width: 100%;
   padding: 12px 14px;
   border-radius: var(--radius-sm);
   border: 1.5px solid var(--color-border);
