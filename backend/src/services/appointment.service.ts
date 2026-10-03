@@ -10,6 +10,22 @@ interface CreateAppointmentInput {
 
 const SLOT_TAKEN = 'SLOT_TAKEN';
 
+// Ciclo di vita ammesso: PENDING -> CONFIRMED -> COMPLETED, con annullamento
+// possibile finché la visita non è completata. COMPLETED e CANCELLED sono finali.
+const ALLOWED_TRANSITIONS: Record<AppointmentStatus, AppointmentStatus[]> = {
+  [AppointmentStatus.PENDING]: [AppointmentStatus.CONFIRMED, AppointmentStatus.CANCELLED],
+  [AppointmentStatus.CONFIRMED]: [AppointmentStatus.COMPLETED, AppointmentStatus.CANCELLED],
+  [AppointmentStatus.COMPLETED]: [],
+  [AppointmentStatus.CANCELLED]: [],
+};
+
+const STATUS_LABEL: Record<AppointmentStatus, string> = {
+  [AppointmentStatus.PENDING]: 'in attesa',
+  [AppointmentStatus.CONFIRMED]: 'confermato',
+  [AppointmentStatus.COMPLETED]: 'completato',
+  [AppointmentStatus.CANCELLED]: 'annullato',
+};
+
 export const createAppointment = async ({
   userId,
   serviceId,
@@ -116,6 +132,7 @@ export const getMyAppointments = async (userId: number, role: Role) => {
         doctor: { include: { user: { select: { id: true, email: true } } } },
         service: true,
         slot: true,
+        medicalRecord: true,
       },
       orderBy: { id: 'desc' },
     });
@@ -131,6 +148,7 @@ export const getMyAppointments = async (userId: number, role: Role) => {
         patient: true,
         service: true,
         slot: true,
+        medicalRecord: true,
       },
       orderBy: { id: 'desc' },
     });
@@ -146,6 +164,7 @@ export const getAllAppointments = async () => {
       doctor: { include: { user: { select: { id: true, email: true } } } },
       service: true,
       slot: true,
+      medicalRecord: true,
     },
     orderBy: { id: 'desc' },
   });
@@ -171,7 +190,7 @@ export const updateAppointmentStatus = async (
 ) => {
   const appointment = await prisma.appointment.findUnique({
     where: { id },
-    include: { doctor: true, patient: true },
+    include: { doctor: true, patient: true, slot: true },
   });
 
   if (!appointment) {
@@ -190,17 +209,28 @@ export const updateAppointmentStatus = async (
     if (status !== AppointmentStatus.CANCELLED) {
       throw new Error('Il paziente può solo cancellare un appuntamento');
     }
+  }
 
-    if (appointment.status === AppointmentStatus.COMPLETED) {
-      throw new Error('Impossibile cancellare un appuntamento già completato');
-    }
+  if (!ALLOWED_TRANSITIONS[appointment.status].includes(status)) {
+    throw new Error(
+      `Impossibile passare da "${STATUS_LABEL[appointment.status]}" a "${STATUS_LABEL[status]}"`
+    );
   }
 
   return prisma.$transaction(async (tx) => {
-    if (status === AppointmentStatus.CANCELLED) {
-      await tx.availabilitySlot.update({
-        where: { id: appointment.slotId },
-        data: { isBooked: false },
+    // Lo slot originale resta collegato all'appuntamento annullato (slotId è
+    // univoco, e così l'appuntamento conserva data e orario nello storico).
+    // Per rimettere l'orario a disposizione si crea uno slot libero identico,
+    // solo se è ancora nel futuro.
+    if (status === AppointmentStatus.CANCELLED && appointment.slot.startTime > new Date()) {
+      await tx.availabilitySlot.create({
+        data: {
+          doctorId: appointment.slot.doctorId,
+          date: appointment.slot.date,
+          startTime: appointment.slot.startTime,
+          endTime: appointment.slot.endTime,
+          isBooked: false,
+        },
       });
     }
 

@@ -116,6 +116,7 @@ DentalCare/
 │   │   ├── middleware/       # auth, authorize, validate
 │   │   └── config/           # Prisma client, configurazione Swagger
 │   └── prisma/schema.prisma  # modello dati
+├── docs/DOCUMENTAZIONE_TECNICA.md  # spiegazione dettagliata di architettura e codice
 ├── frontend/                 # SPA Vue 3 + TypeScript
 │   └── src/
 │       ├── views/            # pagine per paziente / dentista / admin
@@ -280,6 +281,8 @@ Con il backend in esecuzione, la documentazione interattiva Swagger/OpenAPI di t
 ```
 http://localhost:3000/api/docs
 ```
+
+Per una spiegazione dettagliata di come funzionano backend, frontend e database e di come sono collegati tra loro (architettura a livelli, flusso delle richieste, autenticazione, catalogo API, pagine e componenti), vedi la [documentazione tecnica](./docs/DOCUMENTAZIONE_TECNICA.md).
 
 ## Limiti noti e possibili sviluppi
 
