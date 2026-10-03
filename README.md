@@ -45,7 +45,7 @@ Il sistema distingue tre ruoli (`PATIENT`, `DOCTOR`, `ADMIN`), ciascuno con le p
 - Gestione della propria disponibilità (creazione/cancellazione fasce orarie, con controllo anti-sovrapposizione)
 - Visualizzazione dei propri appuntamenti
 - Conferma, completamento o annullamento di un appuntamento
-- Redazione del referto medico per una visita completata
+- Redazione e modifica del referto medico per una visita completata
 
 **Amministratore**
 - Dashboard con statistiche generali (dentisti attivi, prestazioni attive, appuntamenti totali, in attesa di conferma)
@@ -102,7 +102,7 @@ Entità principali:
 - Autenticazione stateless tramite access token JWT a breve scadenza + refresh token per il rinnovo
 - Autorizzazione basata sul ruolo su ogni singola rotta (es. solo un `DOCTOR` può scrivere un referto, solo il paziente proprietario o il dentista assegnato possono vedere un appuntamento)
 - Validazione di tutti i payload in ingresso con Zod, con messaggi di errore in italiano
-- CORS configurato esplicitamente sul backend
+- CORS abilitato sul backend per consentire le chiamate dalla SPA (attualmente aperto a tutte le origini: in produzione andrebbe ristretto al dominio del frontend)
 
 ## Struttura del repository
 
@@ -131,26 +131,147 @@ DentalCare/
 
 ## Avvio del progetto
 
-**Prerequisiti**: Node.js 20+, PostgreSQL in esecuzione in locale.
+Tutti i comandi vanno lanciati dalla root del repository (`DentalCare/`), salvo dove indicato diversamente.
+
+### Prerequisiti
+
+- **Node.js 20.19+ o 22.12+** (richiesto da Vite 8) e npm
+- **PostgreSQL** (sviluppato con la versione 17). In alternativa a un'installazione locale si può usare Docker, vedi [Solo il database](#solo-il-database).
+
+### 1. Installazione (solo la prima volta)
 
 ```bash
-# 1. Installa le dipendenze di backend e frontend
+# dipendenze della root (concurrently, usato da npm run dev)
+npm install
+
+# dipendenze di backend e frontend
 npm run install:all
+```
 
-# 2. Configura le variabili d'ambiente
-#    backend/.env  -> copia da backend/.env.example e imposta DATABASE_URL e JWT_SECRET
-#    frontend/.env -> copia da frontend/.env.example (VITE_API_URL)
+### 2. Variabili d'ambiente (solo la prima volta)
 
-# 3. Applica le migrazioni Prisma al database
-cd backend && npx prisma migrate deploy && cd ..
+Copia i file di esempio e adatta i valori:
 
-# 4. Avvia backend (:3000) e frontend (:5173) insieme
+```bash
+cp backend/.env.example backend/.env
+cp frontend/.env.example frontend/.env
+```
+
+| File | Variabile | Descrizione |
+| --- | --- | --- |
+| `backend/.env` | `DATABASE_URL` | Stringa di connessione PostgreSQL, es. `postgresql://postgres:<password>@localhost:5432/dentalcare` |
+| | `JWT_SECRET` | Chiave di firma dei token: usa una stringa lunga e casuale |
+| | `JWT_EXPIRES_IN` | Durata dell'access token (default `15m`) |
+| | `JWT_REFRESH_EXPIRES_IN` | Durata del refresh token (default `7d`) |
+| | `PORT` | Porta del backend (default `3000`) |
+| `frontend/.env` | `VITE_API_URL` | URL base delle API (default `http://localhost:3000/api`) |
+
+### 3. Database e migrazioni (solo la prima volta e dopo ogni nuova migrazione)
+
+Con PostgreSQL avviato (vedi [Solo il database](#solo-il-database)), se il database `dentalcare` non esiste ancora crealo:
+
+```bash
+psql -U postgres -c "CREATE DATABASE dentalcare;"
+```
+
+Poi applica le migrazioni e genera il client Prisma:
+
+```bash
+cd backend
+npx prisma migrate deploy
+npx prisma generate
+cd ..
+```
+
+### 4. Primo accesso: creare l'amministratore
+
+La registrazione pubblica crea solo pazienti, e i dentisti vengono creati dall'admin. Per avere il primo amministratore:
+
+1. Avvia l'applicazione (passo 5) e registra un account da http://localhost:5173/registrati
+2. Apri Prisma Studio (`cd backend && npx prisma studio`), vai sulla tabella **User** e cambia il campo `role` di quell'account da `PATIENT` ad `ADMIN`, poi salva
+3. Rifai il login: ora hai accesso al pannello admin, da cui puoi creare i dentisti e le prestazioni
+
+### 5. Avvio in sviluppo
+
+```bash
 npm run dev
 ```
 
-Lo script `db:ensure` (eseguito automaticamente da `npm run dev`) verifica che PostgreSQL sia raggiungibile su `localhost:5432` e, su Windows, prova ad avviare il servizio se risulta fermo.
+Il comando esegue prima `db:ensure` (verifica che PostgreSQL risponda sull'host/porta di `DATABASE_URL` e, su Windows, prova ad avviare il servizio `postgresql-x64-17` se è fermo), poi avvia backend e frontend insieme con hot reload:
 
-Build di produzione: `npm run build` (compila TypeScript del backend e genera il bundle statico del frontend).
+| Servizio | URL |
+| --- | --- |
+| Frontend (SPA) | http://localhost:5173 |
+| Backend (API) | http://localhost:3000/api |
+| Health check | http://localhost:3000/api/health |
+| Documentazione Swagger | http://localhost:3000/api/docs |
+
+Per fermare tutto: `Ctrl + C` nel terminale.
+
+Per avviare i due servizi separatamente (in due terminali):
+
+```bash
+npm run dev --prefix backend    # solo backend (nodemon + ts-node)
+npm run dev --prefix frontend   # solo frontend (Vite)
+```
+
+### Build di produzione
+
+```bash
+npm run build                    # compila il backend in backend/dist e il frontend in frontend/dist
+npm start --prefix backend       # avvia il backend compilato
+npm run preview --prefix frontend   # serve il bundle del frontend (http://localhost:4173)
+```
+
+### Solo il database
+
+**PostgreSQL installato su Windows** (servizio `postgresql-x64-17`; i comandi di avvio/arresto richiedono un terminale da amministratore):
+
+```powershell
+Get-Service postgresql*          # stato del servizio
+net start postgresql-x64-17      # avvia
+net stop postgresql-x64-17       # ferma
+npm run db:ensure                # verifica che il DB risponda (e prova ad avviarlo se è fermo)
+```
+
+**In alternativa, con Docker** (qualsiasi sistema operativo, nessuna installazione di PostgreSQL necessaria):
+
+```bash
+# prima volta: crea e avvia il container
+docker run --name dentalcare-db -e POSTGRES_PASSWORD=password -e POSTGRES_DB=dentalcare -p 5432:5432 -d postgres:17
+
+docker start dentalcare-db       # avvii successivi
+docker stop dentalcare-db        # ferma
+```
+
+Con questa configurazione `DATABASE_URL` è quella di `backend/.env.example` (`postgresql://postgres:password@localhost:5432/dentalcare`).
+
+**Consultare e gestire i dati** (dalla cartella `backend/`):
+
+```bash
+npx prisma studio                # interfaccia web sui dati: http://localhost:5555
+npx prisma migrate status        # verifica che le migrazioni siano allineate
+npx prisma migrate deploy        # applica le migrazioni mancanti
+psql -U postgres -d dentalcare   # console SQL
+```
+
+`npx prisma migrate reset` cancella **tutti i dati** e ricrea lo schema da zero: usalo solo se vuoi ripartire da un database vuoto.
+
+### Qualità del codice
+
+```bash
+npm run lint --prefix backend            # ESLint sul backend
+npm run format:check --prefix backend    # Prettier sul backend
+npm run format:check --prefix frontend   # Prettier sul frontend
+# per correggere la formattazione: npm run format --prefix backend / --prefix frontend
+```
+
+### Problemi comuni
+
+- **Il backend non si connette al database / `Can't reach database server`**: PostgreSQL non è avviato oppure `DATABASE_URL` non è corretta (password, porta, nome del database).
+- **`npm run dev` dice che `concurrently` non è riconosciuto**: manca `npm install` nella root (passo 1).
+- **Errori Prisma su tabelle o colonne mancanti**: esegui `npx prisma migrate deploy` in `backend/`.
+- **Il frontend mostra errori di rete**: controlla che il backend sia in esecuzione e che `VITE_API_URL` punti al suo indirizzo.
 
 ## Documentazione API
 
@@ -163,5 +284,6 @@ http://localhost:3000/api/docs
 ## Limiti noti e possibili sviluppi
 
 - Non sono presenti test automatici (unit/integration); la verifica del progetto è stata fatta manualmente end-to-end (build, lint, flusso di registrazione/prenotazione in browser).
-- Le fasce orarie di disponibilità dei dentisti vanno mantenute aggiornate periodicamente dall'admin/dentista tramite la pagina "Disponibilità" (come avviene realmente in uno studio professionale, che pianifica l'agenda mese per mese).
+- Le fasce orarie di disponibilità vanno mantenute aggiornate periodicamente da ciascun dentista tramite la pagina "Disponibilità" (come avviene realmente in uno studio professionale, che pianifica l'agenda mese per mese). Le API permettono di gestirle anche all'admin, ma nell'interfaccia la pagina è riservata ai dentisti.
+- Non esiste un seed iniziale: il primo account amministratore va creato manualmente (vedi [Primo accesso](#4-primo-accesso-creare-lamministratore)).
 - Possibili estensioni: notifiche email/SMS di conferma appuntamento, esportazione referti in PDF, dashboard economica con andamento incassi per l'admin.
