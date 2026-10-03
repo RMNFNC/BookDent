@@ -99,8 +99,8 @@ const startOver = () => {
       <header class="page__header">
         <h1>Prenota una visita</h1>
         <p>
-          Scegli la prestazione e l’orario che preferisci: il dentista disponibile viene
-          assegnato automaticamente, senza bisogno di sceglierlo tu.
+          Scegli la prestazione e l’orario che preferisci: il dentista disponibile viene assegnato
+          automaticamente, senza bisogno di sceglierlo tu.
         </p>
       </header>
 
@@ -134,14 +134,21 @@ const startOver = () => {
           </div>
         </dl>
         <div class="confirmation__actions">
-          <RouterLink to="/appuntamenti"><BaseButton>Vai ai miei appuntamenti</BaseButton></RouterLink>
+          <RouterLink to="/appuntamenti"
+            ><BaseButton>Vai ai miei appuntamenti</BaseButton></RouterLink
+          >
           <BaseButton variant="ghost" @click="startOver">Prenota un’altra visita</BaseButton>
         </div>
       </BaseCard>
 
       <BaseCard v-else>
         <div class="form-row">
-          <BaseSelect v-model="serviceId" label="Prestazione" placeholder="Seleziona una prestazione" required>
+          <BaseSelect
+            v-model="serviceId"
+            label="Prestazione"
+            placeholder="Seleziona una prestazione"
+            required
+          >
             <option v-for="service in services" :key="service.id" :value="String(service.id)">
               {{ service.name }} · {{ formatDuration(service.durationMin) }} ·
               {{ formatPrice(service.price) }}

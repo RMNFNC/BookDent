@@ -133,7 +133,9 @@ withDefaults(defineProps<{ name: string; size?: number }>(), { size: 20 });
     </template>
     <template v-else-if="name === 'inbox'">
       <path d="M4 12h4l2 3h4l2-3h4" />
-      <path d="M4 12 5.5 5A2 2 0 0 1 7.4 4h9.2a2 2 0 0 1 1.9 1.4L20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z" />
+      <path
+        d="M4 12 5.5 5A2 2 0 0 1 7.4 4h9.2a2 2 0 0 1 1.9 1.4L20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"
+      />
     </template>
     <template v-else-if="name === 'alert'">
       <path d="M12 3 22 20H2z" />

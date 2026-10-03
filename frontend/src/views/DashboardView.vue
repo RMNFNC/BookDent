@@ -26,7 +26,9 @@ const upcoming = computed(() =>
     .sort((a, b) => new Date(a.slot.startTime).getTime() - new Date(b.slot.startTime).getTime())
 );
 
-const pendingCount = computed(() => appointments.value.filter((a) => a.status === 'PENDING').length);
+const pendingCount = computed(
+  () => appointments.value.filter((a) => a.status === 'PENDING').length
+);
 const completedCount = computed(
   () => appointments.value.filter((a) => a.status === 'COMPLETED').length
 );
@@ -80,7 +82,12 @@ onMounted(async () => {
         <template v-if="auth.role === 'PATIENT'">
           <div class="stats">
             <StatTile icon="calendar" label="Prossimi appuntamenti" :value="upcoming.length" />
-            <StatTile icon="check-circle" label="Visite completate" :value="completedCount" tone="secondary" />
+            <StatTile
+              icon="check-circle"
+              label="Visite completate"
+              :value="completedCount"
+              tone="secondary"
+            />
           </div>
 
           <div class="cta-row">
@@ -171,15 +178,29 @@ onMounted(async () => {
         <template v-else>
           <div class="stats">
             <StatTile icon="users" label="Dentisti attivi" :value="doctorCount" />
-            <StatTile icon="file-text" label="Prestazioni attive" :value="serviceCount" tone="secondary" />
+            <StatTile
+              icon="file-text"
+              label="Prestazioni attive"
+              :value="serviceCount"
+              tone="secondary"
+            />
             <StatTile icon="calendar" label="Appuntamenti totali" :value="appointments.length" />
-            <StatTile icon="clock" label="In attesa di conferma" :value="pendingCount" tone="secondary" />
+            <StatTile
+              icon="clock"
+              label="In attesa di conferma"
+              :value="pendingCount"
+              tone="secondary"
+            />
           </div>
 
           <div class="cta-row">
             <RouterLink to="/admin/dottori"><BaseButton>Gestisci dentisti</BaseButton></RouterLink>
-            <RouterLink to="/admin/servizi"><BaseButton variant="outline">Gestisci prestazioni</BaseButton></RouterLink>
-            <RouterLink to="/admin/appuntamenti"><BaseButton variant="outline">Tutti gli appuntamenti</BaseButton></RouterLink>
+            <RouterLink to="/admin/servizi"
+              ><BaseButton variant="outline">Gestisci prestazioni</BaseButton></RouterLink
+            >
+            <RouterLink to="/admin/appuntamenti"
+              ><BaseButton variant="outline">Tutti gli appuntamenti</BaseButton></RouterLink
+            >
           </div>
 
           <section class="section">
@@ -187,7 +208,11 @@ onMounted(async () => {
               <h2>Appuntamenti recenti</h2>
               <RouterLink to="/admin/appuntamenti" class="section__link">Vedi tutti</RouterLink>
             </div>
-            <EmptyState v-if="!appointments.length" icon="calendar" title="Nessun appuntamento registrato" />
+            <EmptyState
+              v-if="!appointments.length"
+              icon="calendar"
+              title="Nessun appuntamento registrato"
+            />
             <div v-else class="list">
               <AppointmentCard
                 v-for="appt in appointments.slice(0, 5)"

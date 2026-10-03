@@ -50,7 +50,8 @@ onMounted(async () => {
             <h1>{{ appointment.service.name }}</h1>
             <p>
               {{ formatDate(appointment.slot.startTime) }} ·
-              {{ formatTime(appointment.slot.startTime) }} – {{ formatTime(appointment.slot.endTime) }}
+              {{ formatTime(appointment.slot.startTime) }} –
+              {{ formatTime(appointment.slot.endTime) }}
             </p>
           </div>
           <BaseBadge :tone="STATUS_TONE[appointment.status]">
@@ -62,14 +63,24 @@ onMounted(async () => {
           <BaseCard>
             <h3>Dettagli visita</h3>
             <dl class="details">
-              <div><dt>Prestazione</dt><dd>{{ appointment.service.name }}</dd></div>
-              <div v-if="appointment.service.price">
-                <dt>Costo</dt><dd>{{ formatPrice(appointment.service.price) }}</dd>
+              <div>
+                <dt>Prestazione</dt>
+                <dd>{{ appointment.service.name }}</dd>
               </div>
-              <div><dt>Data</dt><dd>{{ formatDate(appointment.slot.startTime) }}</dd></div>
+              <div v-if="appointment.service.price">
+                <dt>Costo</dt>
+                <dd>{{ formatPrice(appointment.service.price) }}</dd>
+              </div>
+              <div>
+                <dt>Data</dt>
+                <dd>{{ formatDate(appointment.slot.startTime) }}</dd>
+              </div>
               <div>
                 <dt>Orario</dt>
-                <dd>{{ formatTime(appointment.slot.startTime) }} – {{ formatTime(appointment.slot.endTime) }}</dd>
+                <dd>
+                  {{ formatTime(appointment.slot.startTime) }} –
+                  {{ formatTime(appointment.slot.endTime) }}
+                </dd>
               </div>
             </dl>
           </BaseCard>
@@ -89,8 +100,14 @@ onMounted(async () => {
               {{ appointment.patient.firstName }} {{ appointment.patient.lastName }}
             </p>
             <dl class="details">
-              <div><dt>Telefono</dt><dd>{{ appointment.patient.phone }}</dd></div>
-              <div><dt>Codice fiscale</dt><dd>{{ appointment.patient.codiceFiscale }}</dd></div>
+              <div>
+                <dt>Telefono</dt>
+                <dd>{{ appointment.patient.phone }}</dd>
+              </div>
+              <div>
+                <dt>Codice fiscale</dt>
+                <dd>{{ appointment.patient.codiceFiscale }}</dd>
+              </div>
             </dl>
           </BaseCard>
         </div>
@@ -98,10 +115,17 @@ onMounted(async () => {
         <BaseCard v-if="appointment.medicalRecord" class="record-card">
           <h3><IconBase name="file-text" :size="18" /> Referto</h3>
           <dl class="details">
-            <div><dt>Diagnosi</dt><dd>{{ appointment.medicalRecord.diagnosis }}</dd></div>
-            <div><dt>Trattamento</dt><dd>{{ appointment.medicalRecord.treatment }}</dd></div>
+            <div>
+              <dt>Diagnosi</dt>
+              <dd>{{ appointment.medicalRecord.diagnosis }}</dd>
+            </div>
+            <div>
+              <dt>Trattamento</dt>
+              <dd>{{ appointment.medicalRecord.treatment }}</dd>
+            </div>
             <div v-if="appointment.medicalRecord.notes">
-              <dt>Note</dt><dd>{{ appointment.medicalRecord.notes }}</dd>
+              <dt>Note</dt>
+              <dd>{{ appointment.medicalRecord.notes }}</dd>
             </div>
           </dl>
         </BaseCard>

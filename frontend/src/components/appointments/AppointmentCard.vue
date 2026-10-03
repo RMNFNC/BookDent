@@ -11,7 +11,11 @@ import BaseModal from '../ui/BaseModal.vue';
 import BaseAlert from '../ui/BaseAlert.vue';
 import IconBase from '../ui/IconBase.vue';
 
-const props = defineProps<{ appointment: Appointment; viewerRole: Role; showDetailLink?: boolean }>();
+const props = defineProps<{
+  appointment: Appointment;
+  viewerRole: Role;
+  showDetailLink?: boolean;
+}>();
 const emit = defineEmits<{ updated: [appointment: Appointment] }>();
 
 const loading = ref(false);
@@ -35,8 +39,7 @@ const isPast = computed(() => new Date(props.appointment.slot.startTime) < new D
 
 const canPatientCancel = computed(
   () =>
-    props.viewerRole === 'PATIENT' &&
-    ['PENDING', 'CONFIRMED'].includes(props.appointment.status)
+    props.viewerRole === 'PATIENT' && ['PENDING', 'CONFIRMED'].includes(props.appointment.status)
 );
 
 const doctorActions = computed(() => {
@@ -49,7 +52,11 @@ const doctorActions = computed(() => {
   }
   if (props.appointment.status === 'CONFIRMED') {
     return [
-      { status: 'COMPLETED' as AppointmentStatus, label: 'Completa visita', variant: 'primary' as const },
+      {
+        status: 'COMPLETED' as AppointmentStatus,
+        label: 'Completa visita',
+        variant: 'primary' as const,
+      },
       { status: 'CANCELLED' as AppointmentStatus, label: 'Annulla', variant: 'ghost' as const },
     ];
   }
@@ -86,7 +93,10 @@ const requestAction = (status: AppointmentStatus, label: string, danger = false)
         <IconBase name="calendar" :size="18" />
         <div>
           <strong>{{ formatDate(appointment.slot.startTime) }}</strong>
-          <span>{{ formatTime(appointment.slot.startTime) }} – {{ formatTime(appointment.slot.endTime) }}</span>
+          <span
+            >{{ formatTime(appointment.slot.startTime) }} –
+            {{ formatTime(appointment.slot.endTime) }}</span
+          >
         </div>
       </div>
 
@@ -150,20 +160,19 @@ const requestAction = (status: AppointmentStatus, label: string, danger = false)
         size="sm"
         variant="danger"
         :disabled="isPast"
-        @click="confirmAction = { status: 'CANCELLED', label: 'Annulla appuntamento', danger: true }"
+        @click="
+          confirmAction = { status: 'CANCELLED', label: 'Annulla appuntamento', danger: true }
+        "
       >
         Annulla
       </BaseButton>
     </div>
 
-    <BaseModal
-      :open="!!confirmAction"
-      :title="confirmAction?.label"
-      @close="confirmAction = null"
-    >
+    <BaseModal :open="!!confirmAction" :title="confirmAction?.label" @close="confirmAction = null">
       <p>
-        Confermi di voler {{ confirmAction?.status === 'CANCELLED' ? 'annullare' : 'procedere con' }}
-        questo appuntamento del {{ formatDate(appointment.slot.startTime) }} alle
+        Confermi di voler
+        {{ confirmAction?.status === 'CANCELLED' ? 'annullare' : 'procedere con' }} questo
+        appuntamento del {{ formatDate(appointment.slot.startTime) }} alle
         {{ formatTime(appointment.slot.startTime) }}?
       </p>
       <template #footer>

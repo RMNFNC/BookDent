@@ -1,10 +1,6 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref } from 'vue';
-import {
-  fetchServices,
-  createServiceRequest,
-  updateServiceRequest,
-} from '../api/services';
+import { fetchServices, createServiceRequest, updateServiceRequest } from '../api/services';
 import { extractErrorMessage } from '../api/client';
 import type { DentalService } from '../types';
 import { formatDuration, formatPrice } from '../utils/format';
@@ -130,7 +126,11 @@ const toggleActive = async (service: DentalService) => {
 
       <BaseAlert v-if="loadError" tone="danger">{{ loadError }}</BaseAlert>
       <BaseSpinner v-if="loading" />
-      <EmptyState v-else-if="!services.length" icon="file-text" title="Nessuna prestazione registrata" />
+      <EmptyState
+        v-else-if="!services.length"
+        icon="file-text"
+        title="Nessuna prestazione registrata"
+      />
 
       <div v-else class="grid">
         <BaseCard v-for="service in services" :key="service.id">
@@ -142,7 +142,9 @@ const toggleActive = async (service: DentalService) => {
           </div>
           <p v-if="service.description" class="text-muted">{{ service.description }}</p>
           <div class="service-card__meta">
-            <span><IconBase name="clock" :size="15" /> {{ formatDuration(service.durationMin) }}</span>
+            <span
+              ><IconBase name="clock" :size="15" /> {{ formatDuration(service.durationMin) }}</span
+            >
             <span class="service-card__price">{{ formatPrice(service.price) }}</span>
           </div>
           <div class="service-card__actions">

@@ -1,14 +1,24 @@
 <script setup lang="ts">
 import IconBase from './IconBase.vue';
 
-withDefaults(defineProps<{ icon: string; label: string; value: string | number; tone?: 'primary' | 'secondary' }>(), {
-  tone: 'primary',
-});
+withDefaults(
+  defineProps<{
+    icon: string;
+    label: string;
+    value: string | number;
+    tone?: 'primary' | 'secondary';
+  }>(),
+  {
+    tone: 'primary',
+  }
+);
 </script>
 
 <template>
   <div class="stat">
-    <div class="stat__icon" :class="`stat__icon--${tone}`"><IconBase :name="icon" :size="20" /></div>
+    <div class="stat__icon" :class="`stat__icon--${tone}`">
+      <IconBase :name="icon" :size="20" />
+    </div>
     <div>
       <p class="stat__value">{{ value }}</p>
       <p class="stat__label">{{ label }}</p>

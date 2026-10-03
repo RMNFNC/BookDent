@@ -168,7 +168,13 @@ const toggleActive = async (doctor: DoctorSummary) => {
         <BaseInput v-model="createForm.firstName" label="Nome" required />
         <BaseInput v-model="createForm.lastName" label="Cognome" required />
         <BaseInput v-model="createForm.email" type="email" label="Email" required />
-        <BaseInput v-model="createForm.password" type="password" label="Password" hint="Almeno 8 caratteri" required />
+        <BaseInput
+          v-model="createForm.password"
+          type="password"
+          label="Password"
+          hint="Almeno 8 caratteri"
+          required
+        />
         <BaseInput v-model="createForm.specialization" label="Specializzazione" required />
         <BaseTextarea v-model="createForm.bio" label="Bio (opzionale)" :rows="3" />
         <BaseButton type="submit" block :loading="creating">Crea dentista</BaseButton>
