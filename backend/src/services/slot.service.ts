@@ -1,5 +1,5 @@
 import { prisma } from '../config/prisma';
-import { Role } from '@prisma/client';
+import { AppointmentStatus, Role } from '@prisma/client';
 
 interface ActingUser {
   userId: number;
@@ -75,11 +75,14 @@ export const createSlot = async ({
     throw new Error('Non è possibile creare uno slot nel passato');
   }
 
+  // Gli slot rimasti collegati ad appuntamenti annullati sono solo storico:
+  // non occupano più il calendario e non devono bloccare nuovi slot.
   const overlappingSlot = await prisma.availabilitySlot.findFirst({
     where: {
       doctorId,
       date: slotDate,
       AND: [{ startTime: { lt: slotEnd } }, { endTime: { gt: slotStart } }],
+      appointments: { none: { status: AppointmentStatus.CANCELLED } },
     },
   });
 
