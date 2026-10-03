@@ -7,10 +7,7 @@ export const STATUS_LABEL: Record<AppointmentStatus, string> = {
   CANCELLED: 'Annullato',
 };
 
-export const STATUS_TONE: Record<
-  AppointmentStatus,
-  'warning' | 'info' | 'success' | 'danger'
-> = {
+export const STATUS_TONE: Record<AppointmentStatus, 'warning' | 'info' | 'success' | 'danger'> = {
   PENDING: 'warning',
   CONFIRMED: 'info',
   COMPLETED: 'success',

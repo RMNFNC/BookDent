@@ -36,14 +36,19 @@ onMounted(async () => {
         description="I referti compariranno qui dopo le tue visite completate."
       />
       <div v-else class="list">
-        <RouterLink v-for="record in records" :key="record.id" :to="`/referti/${record.id}`" class="record-link">
+        <RouterLink
+          v-for="record in records"
+          :key="record.id"
+          :to="`/referti/${record.id}`"
+          class="record-link"
+        >
           <BaseCard hoverable class="record">
             <div class="record__icon"><IconBase name="file-text" :size="20" /></div>
             <div class="record__info">
               <p class="record__title">{{ record.appointment?.service.name }}</p>
               <p class="record__meta">
-                {{ record.appointment ? formatDate(record.appointment.slot.startTime) : '' }} ·
-                Dr. {{ record.appointment?.doctor.firstName }} {{ record.appointment?.doctor.lastName }}
+                {{ record.appointment ? formatDate(record.appointment.slot.startTime) : '' }} · Dr.
+                {{ record.appointment?.doctor.firstName }} {{ record.appointment?.doctor.lastName }}
               </p>
             </div>
             <IconBase name="chevron-right" :size="18" />

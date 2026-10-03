@@ -39,14 +39,10 @@ export interface CreateSlotPayload {
 }
 
 export const fetchDoctorSlots = (doctorId: number) =>
-  apiClient
-    .get<AvailabilitySlot[]>(`/doctors/${doctorId}/slots`)
-    .then((res) => res.data);
+  apiClient.get<AvailabilitySlot[]>(`/doctors/${doctorId}/slots`).then((res) => res.data);
 
 export const createSlotRequest = (doctorId: number, payload: CreateSlotPayload) =>
-  apiClient
-    .post<AvailabilitySlot>(`/doctors/${doctorId}/slots`, payload)
-    .then((res) => res.data);
+  apiClient.post<AvailabilitySlot>(`/doctors/${doctorId}/slots`, payload).then((res) => res.data);
 
 export const deleteSlotRequest = (doctorId: number, slotId: number) =>
   apiClient.delete(`/doctors/${doctorId}/slots/${slotId}`).then((res) => res.data);

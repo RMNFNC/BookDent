@@ -49,8 +49,8 @@ onMounted(async () => {
             <h1>{{ record.appointment?.service.name }}</h1>
             <p v-if="record.appointment" class="text-muted">
               {{ formatDate(record.appointment.slot.startTime) }} ·
-              {{ formatTime(record.appointment.slot.startTime) }} ·
-              Dr. {{ record.appointment.doctor.firstName }} {{ record.appointment.doctor.lastName }}
+              {{ formatTime(record.appointment.slot.startTime) }} · Dr.
+              {{ record.appointment.doctor.firstName }} {{ record.appointment.doctor.lastName }}
             </p>
           </div>
         </header>

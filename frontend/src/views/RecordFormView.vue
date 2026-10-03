@@ -78,7 +78,12 @@ const handleSubmit = async () => {
             <BaseAlert v-if="submitError" tone="danger">{{ submitError }}</BaseAlert>
 
             <BaseTextarea v-model="form.diagnosis" label="Diagnosi" required :rows="3" />
-            <BaseTextarea v-model="form.treatment" label="Trattamento eseguito" required :rows="3" />
+            <BaseTextarea
+              v-model="form.treatment"
+              label="Trattamento eseguito"
+              required
+              :rows="3"
+            />
             <BaseTextarea v-model="form.notes" label="Note (opzionale)" :rows="3" />
 
             <div class="actions">

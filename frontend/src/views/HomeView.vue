@@ -41,9 +41,21 @@ const steps = [
 ];
 
 const features = [
-  { icon: 'calendar', title: 'Prenotazioni in tempo reale', text: 'Disponibilità sempre aggiornata, senza telefonate.' },
-  { icon: 'file-text', title: 'Referti sempre a portata di mano', text: 'Consulta diagnosi e trattamenti online, quando vuoi.' },
-  { icon: 'lock', title: 'Dati clinici protetti', text: 'Accesso ai referti riservato a te e al tuo dentista.' },
+  {
+    icon: 'calendar',
+    title: 'Prenotazioni in tempo reale',
+    text: 'Disponibilità sempre aggiornata, senza telefonate.',
+  },
+  {
+    icon: 'file-text',
+    title: 'Referti sempre a portata di mano',
+    text: 'Consulta diagnosi e trattamenti online, quando vuoi.',
+  },
+  {
+    icon: 'lock',
+    title: 'Dati clinici protetti',
+    text: 'Accesso ai referti riservato a te e al tuo dentista.',
+  },
 ];
 </script>
 
@@ -132,7 +144,10 @@ const features = [
             <h3>{{ service.name }}</h3>
             <p v-if="service.description">{{ service.description }}</p>
             <div class="service-card__meta">
-              <span><IconBase name="clock" :size="15" /> {{ formatDuration(service.durationMin) }}</span>
+              <span
+                ><IconBase name="clock" :size="15" />
+                {{ formatDuration(service.durationMin) }}</span
+              >
               <span class="service-card__price">{{ formatPrice(service.price) }}</span>
             </div>
           </BaseCard>

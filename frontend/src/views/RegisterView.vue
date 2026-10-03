@@ -68,8 +68,18 @@ const handleSubmit = async () => {
           <BaseAlert v-if="formError" tone="danger">{{ formError }}</BaseAlert>
 
           <div class="row">
-            <BaseInput v-model="form.firstName" label="Nome" required :error="fieldErrors.firstName" />
-            <BaseInput v-model="form.lastName" label="Cognome" required :error="fieldErrors.lastName" />
+            <BaseInput
+              v-model="form.firstName"
+              label="Nome"
+              required
+              :error="fieldErrors.firstName"
+            />
+            <BaseInput
+              v-model="form.lastName"
+              label="Cognome"
+              required
+              :error="fieldErrors.lastName"
+            />
           </div>
 
           <BaseInput

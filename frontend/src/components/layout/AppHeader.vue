@@ -103,11 +103,7 @@ const handleLogout = () => {
           <RouterLink to="/registrati" class="header__cta">Registrati</RouterLink>
         </template>
         <div v-else class="header__user">
-          <button
-            class="header__user-trigger"
-            type="button"
-            @click="userMenuOpen = !userMenuOpen"
-          >
+          <button class="header__user-trigger" type="button" @click="userMenuOpen = !userMenuOpen">
             <span class="header__avatar">{{ userInitials || 'U' }}</span>
             <span class="header__user-info">
               <strong>{{ auth.displayName }}</strong>
@@ -137,7 +133,12 @@ const handleLogout = () => {
     <Transition name="drawer">
       <div v-if="mobileOpen" class="header__drawer">
         <nav class="header__drawer-nav">
-          <RouterLink v-for="item in navItems" :key="item.to" :to="item.to" class="header__drawer-link">
+          <RouterLink
+            v-for="item in navItems"
+            :key="item.to"
+            :to="item.to"
+            class="header__drawer-link"
+          >
             {{ item.label }}
           </RouterLink>
         </nav>
@@ -150,7 +151,12 @@ const handleLogout = () => {
               Registrati
             </RouterLink>
           </template>
-          <button v-else class="header__ghost-link header__ghost-link--block" type="button" @click="handleLogout">
+          <button
+            v-else
+            class="header__ghost-link header__ghost-link--block"
+            type="button"
+            @click="handleLogout"
+          >
             <IconBase name="logout" :size="16" />
             Esci ({{ auth.displayName }})
           </button>
@@ -213,7 +219,9 @@ const handleLogout = () => {
   text-decoration: none;
   font-weight: 600;
   font-size: 0.92rem;
-  transition: background-color 0.15s ease, color 0.15s ease;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
 }
 
 .header__link:hover,

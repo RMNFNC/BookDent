@@ -28,7 +28,10 @@ onMounted(async () => {
     <div class="container">
       <header class="page__header">
         <h1>Le nostre prestazioni</h1>
-        <p>Tutte le visite prenotabili online. Scegli, indica quando preferisci e ti assegneremo un dentista disponibile.</p>
+        <p>
+          Tutte le visite prenotabili online. Scegli, indica quando preferisci e ti assegneremo un
+          dentista disponibile.
+        </p>
       </header>
 
       <BaseSpinner v-if="loading" />
@@ -43,7 +46,9 @@ onMounted(async () => {
           <h3>{{ service.name }}</h3>
           <p v-if="service.description">{{ service.description }}</p>
           <div class="meta">
-            <span><IconBase name="clock" :size="15" /> {{ formatDuration(service.durationMin) }}</span>
+            <span
+              ><IconBase name="clock" :size="15" /> {{ formatDuration(service.durationMin) }}</span
+            >
             <span class="meta__price">{{ formatPrice(service.price) }}</span>
           </div>
           <RouterLink :to="auth.isAuthenticated ? '/prenota' : '/registrati'">
