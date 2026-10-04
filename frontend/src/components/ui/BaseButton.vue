@@ -142,6 +142,14 @@ withDefaults(
   opacity: 0.8;
 }
 
+/* Icona e testo affiancati: gli svg sono display: block (base.css) e
+   altrimenti andrebbero a capo dentro lo span. */
+.btn__content {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .btn--loading .btn__content {
   opacity: 0.85;
 }

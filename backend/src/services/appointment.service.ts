@@ -221,6 +221,10 @@ export const updateAppointmentStatus = async (
     );
   }
 
+  if (status === AppointmentStatus.COMPLETED && appointment.slot.startTime > new Date()) {
+    throw new Error('Non è possibile completare una visita che non è ancora iniziata');
+  }
+
   return prisma.$transaction(async (tx) => {
     // Aggiornamento condizionato allo stato letto sopra: se due richieste
     // concorrenti cambiano lo stesso appuntamento, solo la prima passa (evita

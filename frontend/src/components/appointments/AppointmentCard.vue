@@ -31,9 +31,14 @@ const counterpartName = computed(() => {
   return `${props.appointment.patient.firstName} ${props.appointment.patient.lastName}`;
 });
 
-const counterpartSub = computed(() =>
-  props.viewerRole === 'PATIENT' ? props.appointment.doctor.specialization : 'Paziente'
-);
+const counterpartSub = computed(() => {
+  if (props.viewerRole === 'PATIENT') return props.appointment.doctor.specialization;
+  // L'admin vede gli appuntamenti di tutto lo studio: serve sapere anche il dentista
+  if (props.viewerRole === 'ADMIN' && props.appointment.doctor) {
+    return `Dr. ${props.appointment.doctor.firstName} ${props.appointment.doctor.lastName}`;
+  }
+  return 'Paziente';
+});
 
 const isPast = computed(() => new Date(props.appointment.slot.startTime) < new Date());
 
@@ -132,6 +137,12 @@ const requestAction = (status: AppointmentStatus, label: string, danger = false)
           size="sm"
           :variant="action.variant"
           :loading="loading"
+          :disabled="action.status === 'COMPLETED' && !isPast"
+          :title="
+            action.status === 'COMPLETED' && !isPast
+              ? 'Potrai completare la visita dopo l’orario di inizio'
+              : undefined
+          "
           @click="requestAction(action.status, action.label, action.status === 'CANCELLED')"
         >
           {{ action.label }}
@@ -145,15 +156,18 @@ const requestAction = (status: AppointmentStatus, label: string, danger = false)
           <IconBase name="file-text" :size="16" />
           Scrivi referto
         </RouterLink>
-        <RouterLink
-          v-else-if="appointment.status === 'COMPLETED' && appointment.medicalRecord"
-          :to="`/referti/${appointment.medicalRecord.id}`"
-          class="card-appt__link"
-        >
-          <IconBase name="file-text" :size="16" />
-          Vedi referto
-        </RouterLink>
       </template>
+
+      <RouterLink
+        v-if="
+          viewerRole !== 'ADMIN' && appointment.status === 'COMPLETED' && appointment.medicalRecord
+        "
+        :to="`/referti/${appointment.medicalRecord.id}`"
+        class="card-appt__link"
+      >
+        <IconBase name="file-text" :size="16" />
+        Vedi referto
+      </RouterLink>
 
       <BaseButton
         v-if="canPatientCancel"
@@ -258,6 +272,11 @@ const requestAction = (status: AppointmentStatus, label: string, danger = false)
   flex-wrap: wrap;
   border-top: 1px solid var(--color-border);
   padding-top: 14px;
+}
+
+/* Nessuna azione disponibile (es. vista admin): niente riga vuota col bordo */
+.card-appt__actions:not(:has(*)) {
+  display: none;
 }
 
 .card-appt__link,

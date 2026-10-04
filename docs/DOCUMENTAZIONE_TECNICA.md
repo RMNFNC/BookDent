@@ -433,7 +433,7 @@ I **messaggi d'errore** sono generati dai service con `throw new Error('...')` e
   | `COMPLETED` | nessuno (stato finale) |
   | `CANCELLED` | nessuno (stato finale) |
 
-  Una transizione non ammessa viene rifiutata con un messaggio come `Impossibile passare da "in attesa" a "completato"`. Così non si può saltare la conferma, annullare una visita già completata o annullare due volte.
+  Una transizione non ammessa viene rifiutata con un messaggio come `Impossibile passare da "in attesa" a "completato"`. Così non si può saltare la conferma, annullare una visita già completata o annullare due volte. Inoltre una visita può passare a `COMPLETED` solo dopo il suo orario di inizio (nell'interfaccia il pulsante **Completa visita** resta disattivato fino ad allora).
 
   **Annullamento e slot.** L'aggiornamento avviene in una **transazione** ed è condizionato allo stato letto all'inizio (`updateMany` con `where: { id, status }`): se due richieste modificano lo stesso appuntamento in contemporanea, solo la prima va a buon fine e la seconda riceve un errore. Lo slot originale **resta collegato all'appuntamento annullato**, perché `slotId` è univoco e perché così l'appuntamento conserva data e orario nello storico. Se l'orario è ancora nel futuro, nella stessa transazione viene creato **un nuovo slot libero identico**, che rimette l'orario a disposizione degli altri pazienti.
 
@@ -875,7 +875,7 @@ stateDiagram-v2
 ```
 
 1. Il dentista vede l'appuntamento `PENDING` nella dashboard o in `/appuntamenti`. Nella `AppointmentCard` clicca **Conferma** → `PUT /appointments/:id/status { status: 'CONFIRMED' }`.
-2. Dopo la visita clicca **Completa visita** → `status: 'COMPLETED'`.
+2. Dopo la visita clicca **Completa visita** → `status: 'COMPLETED'` (possibile solo dopo l'orario di inizio).
 3. Compare **Scrivi referto** → `/appuntamenti/:id/referto` (`RecordFormView`) → `POST /records`. Il backend verifica che sia il dentista assegnato, che la visita sia completata e che non esista già un referto.
 4. Il paziente trova il referto in `/referti` (`GET /records/me`) e ne apre il dettaglio (`GET /records/:id`).
 5. In qualunque momento prima del completamento, l'annullamento (`CANCELLED`) **rimette l'orario a disposizione**: viene creato un nuovo slot libero identico, mentre quello originale resta nello storico dell'appuntamento annullato.
