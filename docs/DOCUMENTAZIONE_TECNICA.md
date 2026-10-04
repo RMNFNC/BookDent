@@ -399,7 +399,7 @@ I **messaggi d'errore** sono generati dai service con `throw new Error('...')` e
 #### `appointment.service.ts`: il cuore dell'applicazione
 
 - **`createAppointment`**: prenotazione con **assegnazione automatica del dentista**.
-  1. Recupera il `Patient` dell'utente loggato e la `DentalService` richiesta (deve esistere ed essere attiva).
+  1. Recupera il `Patient` dell'utente loggato e la `DentalService` richiesta (deve esistere ed essere attiva). Rifiuta gli orari già passati.
   2. Calcola la durata richiesta in millisecondi (`durationMin × 60 × 1000`).
   3. Cerca tutti gli **slot candidati**: stessa data, **stesso orario di inizio**, non prenotati, di dentisti attivi, ordinati per `doctorId`.
   4. Tiene solo quelli **abbastanza lunghi** per la prestazione (`endTime − startTime ≥ durata`).
@@ -435,7 +435,7 @@ I **messaggi d'errore** sono generati dai service con `throw new Error('...')` e
 
   Una transizione non ammessa viene rifiutata con un messaggio come `Impossibile passare da "in attesa" a "completato"`. Così non si può saltare la conferma, annullare una visita già completata o annullare due volte.
 
-  **Annullamento e slot.** L'aggiornamento avviene in una **transazione**. Lo slot originale **resta collegato all'appuntamento annullato**, perché `slotId` è univoco e perché così l'appuntamento conserva data e orario nello storico. Se l'orario è ancora nel futuro, nella stessa transazione viene creato **un nuovo slot libero identico**, che rimette l'orario a disposizione degli altri pazienti.
+  **Annullamento e slot.** L'aggiornamento avviene in una **transazione** ed è condizionato allo stato letto all'inizio (`updateMany` con `where: { id, status }`): se due richieste modificano lo stesso appuntamento in contemporanea, solo la prima va a buon fine e la seconda riceve un errore. Lo slot originale **resta collegato all'appuntamento annullato**, perché `slotId` è univoco e perché così l'appuntamento conserva data e orario nello storico. Se l'orario è ancora nel futuro, nella stessa transazione viene creato **un nuovo slot libero identico**, che rimette l'orario a disposizione degli altri pazienti.
 
 #### `slot.service.ts`: disponibilità dei dentisti
 
@@ -447,7 +447,7 @@ I **messaggi d'errore** sono generati dai service con `throw new Error('...')` e
   - la fine sia dopo l'inizio;
   - lo slot non sia nel passato;
   - **non si sovrapponga** a un altro slot dello stesso dentista nello stesso giorno. La condizione usata è la classica verifica di intersezione tra intervalli: `esistente.inizio < nuovo.fine` **e** `esistente.fine > nuovo.inizio`. Gli slot rimasti collegati ad appuntamenti annullati sono esclusi dal controllo: sono solo storico e non occupano più il calendario.
-- **`searchAvailableSlots`**: usata dalla pagina di prenotazione. Data una prestazione e un giorno, restituisce tutti gli slot liberi di dentisti attivi abbastanza lunghi per quella prestazione, con nome e specializzazione del dentista.
+- **`searchAvailableSlots`**: usata dalla pagina di prenotazione. Data una prestazione e un giorno, restituisce tutti gli slot liberi e non ancora iniziati di dentisti attivi abbastanza lunghi per quella prestazione, con nome e specializzazione del dentista.
 - **`deleteSlot`**: elimina uno slot solo se appartiene al dentista indicato e **non è prenotato**.
 
 #### `doctor.service.ts`: anagrafica dentisti
@@ -855,7 +855,7 @@ Il login è identico, con `POST /api/auth/login` e `loginUser` al posto della re
 
 1. Il paziente apre `/prenota`. `BookAppointmentView` carica le prestazioni (`GET /services`).
 2. Sceglie **prestazione** e **giorno**. Un `watch` rileva il cambiamento e chiama `fetchAvailability` → `GET /appointments/availability?serviceId=..&date=..`.
-3. Backend: `searchAvailableSlots` restituisce tutti gli slot liberi, di dentisti attivi, abbastanza lunghi per la prestazione.
+3. Backend: `searchAvailableSlots` restituisce tutti gli slot liberi e futuri, di dentisti attivi, abbastanza lunghi per la prestazione.
 4. Il frontend **raggruppa gli slot per orario di inizio** (`groupedTimes`) e mostra ogni orario con il numero di dentisti liberi. **Il paziente non vede né sceglie il dentista.**
 5. Il paziente clicca un orario → `bookAppointmentRequest({ serviceId, date, startTime })` → `POST /appointments`.
 6. Backend: `createAppointment` sceglie il primo dentista con uno slot idoneo e lo prenota in transazione (vedi §4.7). Se intanto un altro paziente ha preso quello slot, passa automaticamente al dentista successivo.

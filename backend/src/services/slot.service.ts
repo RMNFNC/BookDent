@@ -116,6 +116,7 @@ export const searchAvailableSlots = async ({ serviceId, date }: SearchAvailabili
   const slots = await prisma.availabilitySlot.findMany({
     where: {
       date: slotDate,
+      startTime: { gt: new Date() },
       isBooked: false,
       doctor: { isActive: true },
     },

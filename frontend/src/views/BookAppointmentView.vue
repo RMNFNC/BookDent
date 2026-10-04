@@ -18,7 +18,13 @@ import IconBase from '../components/ui/IconBase.vue';
 const services = ref<DentalService[]>([]);
 const serviceId = ref('');
 const date = ref('');
-const minDate = new Date().toISOString().slice(0, 10);
+// Data locale (toISOString userebbe UTC: in Italia dopo mezzanotte darebbe ancora ieri)
+const today = new Date();
+const minDate = [
+  today.getFullYear(),
+  String(today.getMonth() + 1).padStart(2, '0'),
+  String(today.getDate()).padStart(2, '0'),
+].join('-');
 
 const availableSlots = ref<AvailableSlot[]>([]);
 const searching = ref(false);

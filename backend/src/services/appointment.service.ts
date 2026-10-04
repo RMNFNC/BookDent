@@ -46,6 +46,10 @@ export const createAppointment = async ({
     throw new Error('Data o orario non validi');
   }
 
+  if (requestedStart <= new Date()) {
+    throw new Error('Non è possibile prenotare un orario già passato');
+  }
+
   const requiredDurationMs = (service.durationMin ?? 0) * 60 * 1000;
 
   // Auto-assign: il paziente non sceglie il dentista, il sistema cerca fra
@@ -218,6 +222,18 @@ export const updateAppointmentStatus = async (
   }
 
   return prisma.$transaction(async (tx) => {
+    // Aggiornamento condizionato allo stato letto sopra: se due richieste
+    // concorrenti cambiano lo stesso appuntamento, solo la prima passa (evita
+    // ad esempio di creare due slot sostitutivi per un doppio annullamento).
+    const changed = await tx.appointment.updateMany({
+      where: { id, status: appointment.status },
+      data: { status },
+    });
+
+    if (changed.count === 0) {
+      throw new Error('Lo stato dell’appuntamento è cambiato nel frattempo, ricarica la pagina');
+    }
+
     // Lo slot originale resta collegato all'appuntamento annullato (slotId è
     // univoco, e così l'appuntamento conserva data e orario nello storico).
     // Per rimettere l'orario a disposizione si crea uno slot libero identico,
@@ -234,9 +250,8 @@ export const updateAppointmentStatus = async (
       });
     }
 
-    return tx.appointment.update({
+    return tx.appointment.findUniqueOrThrow({
       where: { id },
-      data: { status },
       include: {
         patient: true,
         doctor: {
