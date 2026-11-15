@@ -51,6 +51,12 @@ withDefaults(
   white-space: nowrap;
 }
 
+.btn__content {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .btn:active:not(:disabled) {
   transform: translateY(1px);
 }

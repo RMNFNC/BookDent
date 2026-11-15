@@ -9,10 +9,11 @@ const year = new Date().getFullYear();
     <div class="container footer__inner">
       <div class="footer__brand">
         <span class="footer__brand-icon"><IconBase name="tooth" :size="16" /></span>
-        DentalCare
+        Smart Dental Care
       </div>
       <p class="footer__note">
-        © {{ year }} DentalCare · Prenotazioni e referti online per il tuo studio dentistico
+        © {{ year }} Smart Dental Care · Il tuo sorriso digitale · Prenotazioni e referti online per
+        il tuo studio dentistico
       </p>
     </div>
   </footer>

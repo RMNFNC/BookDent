@@ -30,3 +30,14 @@ export const formatDuration = (minutes: number | null): string => {
 
 export const initials = (firstName: string, lastName: string): string =>
   `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
+
+// Data odierna in formato YYYY-MM-DD secondo l'ora locale (toISOString userebbe
+// UTC: in Italia dopo mezzanotte restituirebbe ancora il giorno precedente).
+export const todayLocalDate = (): string => {
+  const today = new Date();
+  return [
+    today.getFullYear(),
+    String(today.getMonth() + 1).padStart(2, '0'),
+    String(today.getDate()).padStart(2, '0'),
+  ].join('-');
+};

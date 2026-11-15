@@ -1,6 +1,6 @@
 import { prisma } from '../config/prisma';
 import bcrypt from 'bcryptjs';
-import { Role } from '@prisma/client';
+import { AppointmentStatus, Role } from '@prisma/client';
 
 interface CreateDoctorInput {
   email: string;
@@ -92,6 +92,27 @@ interface UpdateDoctorInput {
 export const updateDoctor = async (id: number, data: UpdateDoctorInput) => {
   const doctor = await prisma.doctor.findUnique({ where: { id } });
   if (!doctor) throw new Error('Dentista non trovato');
+
+  // Un dentista disattivato non riceve nuove prenotazioni, ma i pazienti che
+  // hanno già un appuntamento futuro con lui resterebbero senza visita: prima
+  // di disattivarlo quegli appuntamenti vanno annullati o completati.
+  if (data.isActive === false && doctor.isActive) {
+    const upcoming = await prisma.appointment.count({
+      where: {
+        doctorId: id,
+        status: { in: [AppointmentStatus.PENDING, AppointmentStatus.CONFIRMED] },
+        slot: { startTime: { gt: new Date() } },
+      },
+    });
+
+    if (upcoming > 0) {
+      throw new Error(
+        upcoming === 1
+          ? 'Il dentista ha 1 appuntamento futuro ancora attivo: annullalo prima di disattivarlo'
+          : `Il dentista ha ${upcoming} appuntamenti futuri ancora attivi: annullali prima di disattivarlo`
+      );
+    }
+  }
 
   return prisma.doctor.update({
     where: { id },

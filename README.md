@@ -1,6 +1,8 @@
-# DentalCare
+# Smart Dental Care
 
 Applicazione full-stack API-based per la gestione digitale di uno studio dentistico: prenotazione visite con assegnazione automatica del dentista, gestione referti medici e pannello amministrativo per dottori, prestazioni e appuntamenti.
+
+> *Il tuo sorriso digitale.*
 
 Progetto sviluppato come esame per il corso di sviluppo full-stack, sulla traccia:
 
@@ -16,6 +18,7 @@ Progetto sviluppato come esame per il corso di sviluppo full-stack, sulla tracci
 - [Sicurezza](#sicurezza)
 - [Struttura del repository](#struttura-del-repository)
 - [Avvio del progetto](#avvio-del-progetto)
+- [Test](#test)
 - [Documentazione API](#documentazione-api)
 - [Limiti noti e possibili sviluppi](#limiti-noti-e-possibili-sviluppi)
 
@@ -23,7 +26,7 @@ Progetto sviluppato come esame per il corso di sviluppo full-stack, sulla tracci
 
 | Requisito della traccia | Come è implementato |
 | --- | --- |
-| Impresa del settore sanitario | Studio dentistico (DentalCare), con pazienti, dentisti e personale amministrativo |
+| Impresa del settore sanitario | Studio dentistico (Smart Dental Care), con pazienti, dentisti e personale amministrativo |
 | Servizio significativo | **Prenotazione visite** con assegnazione automatica del dentista disponibile + **gestione referti medici** post-visita |
 | Backend RESTful | API Express + TypeScript su risorse (`/auth`, `/users`, `/doctors`, `/services`, `/appointments`, `/records`), con verbi HTTP e status code coerenti, documentata in OpenAPI/Swagger |
 | Architettura moderna | Backend Node/Express + Prisma ORM su PostgreSQL, frontend Vue 3 + Pinia + Vue Router in TypeScript, comunicazione via API JSON, autenticazione stateless JWT |
@@ -102,7 +105,10 @@ Entità principali:
 - Autenticazione stateless tramite access token JWT a breve scadenza + refresh token per il rinnovo
 - Autorizzazione basata sul ruolo su ogni singola rotta (es. solo un `DOCTOR` può scrivere un referto, solo il paziente proprietario o il dentista assegnato possono vedere un appuntamento)
 - Validazione di tutti i payload in ingresso con Zod, con messaggi di errore in italiano
-- CORS abilitato sul backend per consentire le chiamate dalla SPA (attualmente aperto a tutte le origini: in produzione andrebbe ristretto al dominio del frontend)
+- CORS ristretto alle sole origini del frontend indicate in `CORS_ORIGIN`
+- Limite ai tentativi di login: dopo 5 tentativi falliti in 15 minuti per la stessa email (o 50 dallo stesso IP) le API rispondono `429` fino allo scadere della finestra; limite anche sulle registrazioni (20 l'ora per IP)
+- Il server non si avvia se `JWT_SECRET` è mancante, più corto di 32 caratteri o ancora uguale al segnaposto di `.env.example`
+- Errori sempre restituiti in JSON, senza stack trace verso il client
 
 ## Struttura del repository
 
@@ -161,10 +167,12 @@ cp frontend/.env.example frontend/.env
 | File | Variabile | Descrizione |
 | --- | --- | --- |
 | `backend/.env` | `DATABASE_URL` | Stringa di connessione PostgreSQL, es. `postgresql://postgres:<password>@localhost:5432/dentalcare` |
-| | `JWT_SECRET` | Chiave di firma dei token: usa una stringa lunga e casuale |
+| | `JWT_SECRET` | Chiave di firma dei token: stringa casuale di almeno 32 caratteri. Generala con `node -e "console.log(require('crypto').randomBytes(48).toString('base64url'))"` |
 | | `JWT_EXPIRES_IN` | Durata dell'access token (default `15m`) |
 | | `JWT_REFRESH_EXPIRES_IN` | Durata del refresh token (default `7d`) |
 | | `PORT` | Porta del backend (default `3000`) |
+| | `CORS_ORIGIN` | Origini del frontend autorizzate, separate da virgola (default `http://localhost:5173`) |
+| | `SWAGGER_ENABLED` | `false` per disattivare la documentazione su `/api/docs` (default attiva) |
 | `frontend/.env` | `VITE_API_URL` | URL base delle API (default `http://localhost:3000/api`) |
 
 ### 3. Database e migrazioni (solo la prima volta e dopo ogni nuova migrazione)
@@ -274,6 +282,20 @@ npm run format:check --prefix frontend   # Prettier sul frontend
 - **Errori Prisma su tabelle o colonne mancanti**: esegui `npx prisma migrate deploy` in `backend/`.
 - **Il frontend mostra errori di rete**: controlla che il backend sia in esecuzione e che `VITE_API_URL` punti al suo indirizzo.
 
+## Test
+
+Il test end-to-end (`backend/tests/e2e.cjs`) esercita tutte le API reali: autenticazione, permessi per ruolo, fasce orarie, prenotazioni concorrenti, transizioni di stato, referti, disattivazioni, CORS e limite ai login. Crea i propri dati con nomi univoci: va eseguito su un **database di test separato**, mai su quello con dati reali.
+
+```bash
+cd backend
+# PowerShell: $env:DATABASE_URL="postgresql://postgres:<password>@localhost:5432/dentalcare_test"
+export DATABASE_URL="postgresql://postgres:<password>@localhost:5432/dentalcare_test"
+npx prisma migrate deploy          # crea/aggiorna il database di test
+npm run build
+PORT=3999 npm start                # in un secondo terminale, con lo stesso DATABASE_URL
+npm run test:e2e                   # di default punta a http://localhost:3999
+```
+
 ## Documentazione API
 
 Con il backend in esecuzione, la documentazione interattiva Swagger/OpenAPI di tutti gli endpoint è disponibile su:
@@ -282,11 +304,13 @@ Con il backend in esecuzione, la documentazione interattiva Swagger/OpenAPI di t
 http://localhost:3000/api/docs
 ```
 
+La documentazione è attiva di default; per un'installazione esposta all'esterno si può disattivare con `SWAGGER_ENABLED=false` in `backend/.env`.
+
 Per una spiegazione dettagliata di come funzionano backend, frontend e database e di come sono collegati tra loro (architettura a livelli, flusso delle richieste, autenticazione, catalogo API, pagine e componenti), vedi la [documentazione tecnica](./docs/DOCUMENTAZIONE_TECNICA.md).
 
 ## Limiti noti e possibili sviluppi
 
-- Non sono presenti test automatici (unit/integration); la verifica del progetto è stata fatta manualmente end-to-end (build, lint, flusso di registrazione/prenotazione in browser).
+- È presente un test end-to-end delle API (`backend/tests/e2e.cjs`, vedi [Test](#test)); non ci sono test unitari né test automatici dell'interfaccia, che è stata verificata manualmente in browser.
 - Le fasce orarie di disponibilità vanno mantenute aggiornate periodicamente da ciascun dentista tramite la pagina "Disponibilità" (come avviene realmente in uno studio professionale, che pianifica l'agenda mese per mese). Le API permettono di gestirle anche all'admin, ma nell'interfaccia la pagina è riservata ai dentisti.
 - Non esiste un seed iniziale: il primo account amministratore va creato manualmente (vedi [Primo accesso](#4-primo-accesso-creare-lamministratore)).
 - Possibili estensioni: notifiche email/SMS di conferma appuntamento, esportazione referti in PDF, dashboard economica con andamento incassi per l'admin.

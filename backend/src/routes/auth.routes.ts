@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { login, register, refresh } from '../controllers/auth.controller';
 import { validate } from '../middleware/validate';
+import { loginLimiter, loginIpLimiter, registerLimiter } from '../middleware/rateLimit';
 
 const router = Router();
 
@@ -52,7 +53,7 @@ const refreshSchema = z.object({
  *       201: { description: Utente registrato, con access e refresh token }
  *       400: { description: Dati non validi o email/codice fiscale già registrati }
  */
-router.post('/register', validate(registerSchema), register);
+router.post('/register', registerLimiter, validate(registerSchema), register);
 
 /**
  * @openapi
@@ -75,7 +76,7 @@ router.post('/register', validate(registerSchema), register);
  *       200: { description: Login riuscito, con access e refresh token }
  *       401: { description: Credenziali non valide }
  */
-router.post('/login', validate(loginSchema), login);
+router.post('/login', loginIpLimiter, loginLimiter, validate(loginSchema), login);
 
 /**
  * @openapi

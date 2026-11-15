@@ -1,6 +1,6 @@
-# DentalCare — Documentazione tecnica
+# Smart Dental Care — Documentazione tecnica
 
-Questo documento spiega **come è costruita e come funziona** l'applicazione DentalCare: il database, il backend, il frontend e soprattutto **come sono collegati tra loro**. Non descrive ogni singolo file riga per riga: spiega **cosa fa ogni tipologia di file** (es. "tutti i file `*.routes.ts` fanno questo"), approfondendo i punti in cui sta la logica importante.
+Questo documento spiega **come è costruita e come funziona** l'applicazione Smart Dental Care: il database, il backend, il frontend e soprattutto **come sono collegati tra loro**. Non descrive ogni singolo file riga per riga: spiega **cosa fa ogni tipologia di file** (es. "tutti i file `*.routes.ts` fanno questo"), approfondendo i punti in cui sta la logica importante.
 
 Per installazione e avvio vedi il [README](../README.md#avvio-del-progetto).
 
@@ -224,12 +224,12 @@ Vantaggio: la logica di business (service) è indipendente da Express, quindi è
 È il file che `nodemon` (in sviluppo) o `node dist/app.js` (in produzione) avvia. In ordine:
 
 1. Come **primo import** esegue `import 'dotenv/config'`, che carica le variabili di `backend/.env` in `process.env`. Deve restare il primo: gli import successivi (ad esempio `auth.service.ts`, che legge `JWT_SECRET`) vengono eseguiti subito e hanno bisogno che le variabili siano già disponibili.
-2. Importa Express, CORS, Swagger e tutti i router.
+2. Importa Express, CORS, Swagger e tutti i router, poi verifica che `JWT_SECRET` sia impostato: se manca il server si ferma subito con un messaggio esplicito invece di fallire al primo login.
 3. Registra i middleware globali:
-   - `cors()`: consente al frontend (che gira su un'altra porta, quindi su un'altra "origine") di chiamare le API;
+   - `cors({ origin: corsOrigins })`: consente al frontend (che gira su un'altra porta, quindi su un'altra "origine") di chiamare le API. Sono ammesse solo le origini elencate in `CORS_ORIGIN` (separate da virgola, default `http://localhost:5173`): il browser blocca le chiamate da qualunque altro sito;
    - `express.json()`: converte il body JSON delle richieste in un oggetto JavaScript disponibile in `req.body`.
-4. Definisce `GET /api/health`, un endpoint di controllo che risponde `{ status: 'DentalCare API running' }`.
-5. Monta la documentazione Swagger su `/api/docs`.
+4. Definisce `GET /api/health`, un endpoint di controllo che risponde `{ status: 'Smart Dental Care API running' }`.
+5. Monta la documentazione Swagger su `/api/docs`, salvo `SWAGGER_ENABLED=false`.
 6. **Monta i router**, ciascuno su un prefisso:
 
    | Prefisso | Router |
@@ -241,7 +241,8 @@ Vantaggio: la logica di business (service) è indipendente da Express, quindi è
    | `/api/appointments` | `appointment.routes.ts` |
    | `/api/records` | `record.routes.ts` |
 
-7. Avvia il server sulla porta `PORT` (default `3000`).
+7. Registra due gestori finali: uno risponde `404 { message: 'Risorsa non trovata' }` per le rotte inesistenti, l'altro intercetta gli errori non gestiti (ad esempio un body JSON malformato) e risponde sempre in JSON (`400` per errori del client, `500` altrimenti) invece della pagina HTML di default di Express.
+8. Avvia il server sulla porta `PORT` (default `3000`).
 
 ### 4.4 File `*.routes.ts`: la mappa degli endpoint
 
@@ -332,6 +333,16 @@ Va sempre messo **dopo** `authenticate`.
   ```
   Il frontend usa `path` per evidenziare il campo sbagliato nel form (vedi `RegisterView.vue`);
 - se sono validi, **sostituisce `req.body` con i dati "puliti"** da Zod (stringhe senza spazi, numeri convertiti, campi non previsti rimossi) e prosegue.
+
+#### `rateLimit.ts`: troppi tentativi?
+
+Limitatori basati su `express-rate-limit`, applicati in `auth.routes.ts` prima della validazione:
+
+- `loginLimiter`: massimo **5 login falliti in 15 minuti per coppia IP + email**. Blocca il brute force su un singolo account senza bloccare i colleghi dello studio che escono dallo stesso IP. I login riusciti non vengono conteggiati; superato il limite la risposta è **429** con `{ message: 'Troppi tentativi di accesso falliti. Riprova tra 15 minuti.' }`, mostrato dal frontend nel form di login.
+- `loginIpLimiter`: massimo **50 login falliti in 15 minuti per IP**, contro chi prova molte email diverse.
+- `registerLimiter`: massimo **20 registrazioni l'ora per IP**.
+
+I contatori sono in memoria: si azzerano al riavvio del server e valgono per una singola istanza, adeguato per il deployment previsto (un solo processo backend).
 
 ### 4.6 File `*.controller.ts`: il ponte tra HTTP e logica
 
@@ -935,5 +946,6 @@ Alcuni dettagli emersi analizzando il codice, utili da conoscere per un'eventual
 - **Uno slot = un appuntamento.** Uno slot viene prenotato per intero, anche se è più lungo della prestazione (es. uno slot di 60 minuti usato per una visita di 30). L'orario richiesto deve coincidere esattamente con l'inizio di uno slot. È una scelta di semplicità coerente con il modello `slotId @unique`. Per lo stesso motivo un annullamento non "riapre" lo slot originale ma ne crea uno nuovo identico (vedi §4.7).
 - **Migrazione di riallineamento dati.** Nelle versioni precedenti l'annullamento rimetteva `isBooked = false` sullo slot originale, che però restava collegato all'appuntamento annullato. Lo slot sembrava libero nella ricerca, ma la prenotazione falliva per il vincolo univoco su `slotId`. La migrazione `20261003120000_repair_cancelled_appointment_slots` (solo dati, nessuna modifica allo schema) sistema i record già esistenti: rimette occupati questi slot e, se sono nel futuro, crea lo slot libero sostitutivo.
 - **Logout lato client.** Il logout cancella i token dal browser, ma i JWT già emessi restano validi fino alla scadenza (access 15 min, refresh 7 giorni). È il compromesso tipico dell'autenticazione stateless; per revocarli servirebbe salvarli nel database.
-- **CORS aperto.** `cors()` senza opzioni accetta richieste da qualsiasi origine: va bene in sviluppo, in produzione andrebbe limitato al dominio del frontend.
+- **Disattivazione dei dentisti.** Un dentista con appuntamenti futuri ancora attivi (in attesa o confermati) non può essere disattivato: l'API risponde 400 indicando quanti sono. L'admin li annulla dalla pagina "Appuntamenti" (pulsante *Annulla*) e poi può disattivarlo.
+- **Test end-to-end.** `backend/tests/e2e.cjs` (`npm run test:e2e`) verifica tutte le API su un database di test; per sicurezza rifiuta di girare se il nome del database non contiene "test".
 - **Date e fusi orari.** Il campo `date` degli slot è inviato come `YYYY-MM-DD` e salvato come mezzanotte UTC, mentre gli orari sono timestamp ISO completi. La ricerca per giorno funziona perché frontend e backend usano la stessa convenzione.

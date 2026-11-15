@@ -4,7 +4,13 @@ import { fetchServices } from '../api/services';
 import { fetchAvailability, bookAppointmentRequest } from '../api/appointments';
 import { extractErrorMessage } from '../api/client';
 import type { Appointment, AvailableSlot, DentalService } from '../types';
-import { formatDate, formatDuration, formatPrice, formatTime } from '../utils/format';
+import {
+  formatDate,
+  formatDuration,
+  formatPrice,
+  formatTime,
+  todayLocalDate,
+} from '../utils/format';
 import BaseCard from '../components/ui/BaseCard.vue';
 import BaseSelect from '../components/ui/BaseSelect.vue';
 import BaseInput from '../components/ui/BaseInput.vue';
@@ -18,13 +24,7 @@ import IconBase from '../components/ui/IconBase.vue';
 const services = ref<DentalService[]>([]);
 const serviceId = ref('');
 const date = ref('');
-// Data locale (toISOString userebbe UTC: in Italia dopo mezzanotte darebbe ancora ieri)
-const today = new Date();
-const minDate = [
-  today.getFullYear(),
-  String(today.getMonth() + 1).padStart(2, '0'),
-  String(today.getDate()).padStart(2, '0'),
-].join('-');
+const minDate = todayLocalDate();
 
 const availableSlots = ref<AvailableSlot[]>([]);
 const searching = ref(false);

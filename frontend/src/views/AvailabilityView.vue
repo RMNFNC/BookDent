@@ -4,7 +4,7 @@ import { useAuthStore } from '../stores/auth';
 import { fetchDoctorSlots, createSlotRequest, deleteSlotRequest } from '../api/doctors';
 import { extractErrorMessage } from '../api/client';
 import type { AvailabilitySlot } from '../types';
-import { formatDate, formatTime } from '../utils/format';
+import { formatDate, formatTime, todayLocalDate } from '../utils/format';
 import BaseCard from '../components/ui/BaseCard.vue';
 import BaseInput from '../components/ui/BaseInput.vue';
 import BaseButton from '../components/ui/BaseButton.vue';
@@ -29,7 +29,7 @@ const slotToDelete = ref<AvailabilitySlot | null>(null);
 const deleting = ref(false);
 const deleteError = ref('');
 
-const minDate = new Date().toISOString().slice(0, 10);
+const minDate = todayLocalDate();
 
 const sortedSlots = computed(() =>
   [...slots.value].sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())
