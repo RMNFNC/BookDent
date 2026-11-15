@@ -28,6 +28,12 @@ const filtered = computed(() =>
     : appointments.value.filter((a) => a.status === filter.value)
 );
 
+const onUpdated = (updated: Appointment) => {
+  appointments.value = appointments.value.map((a) =>
+    a.id === updated.id ? { ...a, ...updated, medicalRecord: a.medicalRecord } : a
+  );
+};
+
 onMounted(async () => {
   try {
     appointments.value = await fetchAllAppointments();
@@ -44,7 +50,10 @@ onMounted(async () => {
     <div class="container">
       <header class="page__header">
         <h1>Tutti gli appuntamenti</h1>
-        <p>Panoramica di sola lettura su tutte le prenotazioni dello studio.</p>
+        <p>
+          Panoramica di tutte le prenotazioni dello studio. Puoi annullare le visite in attesa o
+          confermate.
+        </p>
       </header>
 
       <div class="tabs" role="tablist">
@@ -69,6 +78,7 @@ onMounted(async () => {
           :key="appt.id"
           :appointment="appt"
           viewer-role="ADMIN"
+          @updated="onUpdated"
         />
       </div>
     </div>

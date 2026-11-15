@@ -4,7 +4,7 @@ export const swaggerSpec = swaggerJsdoc({
   definition: {
     openapi: '3.0.0',
     info: {
-      title: 'DentalCare API',
+      title: 'Smart Dental Care API',
       version: '1.0.0',
       description: 'API per la gestione di prenotazioni e referti di uno studio dentistico',
     },

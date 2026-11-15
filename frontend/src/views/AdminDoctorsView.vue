@@ -127,7 +127,7 @@ const toggleActive = async (doctor: DoctorSummary) => {
         </BaseButton>
       </header>
 
-      <BaseAlert v-if="loadError" tone="danger">{{ loadError }}</BaseAlert>
+      <BaseAlert v-if="loadError" tone="danger" class="page__alert">{{ loadError }}</BaseAlert>
       <BaseSpinner v-if="loading" />
       <EmptyState v-else-if="!doctors.length" icon="users" title="Nessun dentista registrato" />
 
@@ -195,6 +195,10 @@ const toggleActive = async (doctor: DoctorSummary) => {
 </template>
 
 <style scoped>
+.page__alert {
+  margin-bottom: 20px;
+}
+
 .page {
   padding: 40px 0 72px;
   flex: 1;

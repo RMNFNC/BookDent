@@ -64,10 +64,11 @@ const features = [
     <section class="hero">
       <div class="container hero__inner">
         <div class="hero__copy">
-          <span class="hero__eyebrow">Studio dentistico digitale</span>
+          <p class="hero__brand">Smart Dental Care</p>
+          <span class="hero__eyebrow">Il tuo sorriso digitale</span>
           <h1>Prenota la tua visita in pochi click, senza pensare a chi te la farà.</h1>
           <p class="hero__lead">
-            Scegli la prestazione, il giorno e l’orario che preferisci: DentalCare trova
+            Scegli la prestazione, il giorno e l’orario che preferisci: Smart Dental Care trova
             automaticamente un dentista disponibile per te. Referti e appuntamenti sempre
             consultabili online.
           </p>
@@ -189,6 +190,16 @@ const features = [
   grid-template-columns: 1.1fr 0.9fr;
   gap: 48px;
   align-items: center;
+}
+
+.hero__brand {
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: 1rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-primary-dark);
+  margin: 0 0 10px;
 }
 
 .hero__eyebrow {

@@ -37,9 +37,12 @@ const counterpartSub = computed(() =>
 
 const isPast = computed(() => new Date(props.appointment.slot.startTime) < new Date());
 
-const canPatientCancel = computed(
+// Il paziente annulla le proprie visite, l'admin può annullare qualsiasi visita
+// attiva (es. prima di disattivare un dentista che ha ancora appuntamenti futuri).
+const canCancel = computed(
   () =>
-    props.viewerRole === 'PATIENT' && ['PENDING', 'CONFIRMED'].includes(props.appointment.status)
+    (props.viewerRole === 'PATIENT' || props.viewerRole === 'ADMIN') &&
+    ['PENDING', 'CONFIRMED'].includes(props.appointment.status)
 );
 
 const doctorActions = computed(() => {
@@ -156,10 +159,10 @@ const requestAction = (status: AppointmentStatus, label: string, danger = false)
       </template>
 
       <BaseButton
-        v-if="canPatientCancel"
+        v-if="canCancel"
         size="sm"
         variant="danger"
-        :disabled="isPast"
+        :disabled="viewerRole === 'PATIENT' && isPast"
         @click="
           confirmAction = { status: 'CANCELLED', label: 'Annulla appuntamento', danger: true }
         "
