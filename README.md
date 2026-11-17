@@ -117,7 +117,7 @@ Entità principali:
 ## Struttura del repository
 
 ```
-DentalCare/
+BookDent/
 ├── backend/                  # API REST (Express + Prisma)
 │   ├── src/
 │   │   ├── routes/           # definizione endpoint + documentazione OpenAPI inline
@@ -142,7 +142,7 @@ DentalCare/
 
 ## Avvio del progetto
 
-Tutti i comandi vanno lanciati dalla root del repository (`DentalCare/`), salvo dove indicato diversamente.
+Tutti i comandi vanno lanciati dalla root del repository (`BookDent/`), salvo dove indicato diversamente.
 
 ### Prerequisiti
 
