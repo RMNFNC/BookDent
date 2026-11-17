@@ -28,7 +28,6 @@ const corsOrigins = (process.env.CORS_ORIGIN ?? 'http://localhost:5173')
   .map((origin) => origin.trim())
   .filter(Boolean);
 
-// Swagger è attivo salvo SWAGGER_ENABLED=false.
 const swaggerEnabled = process.env.SWAGGER_ENABLED !== 'false';
 
 const app = express();

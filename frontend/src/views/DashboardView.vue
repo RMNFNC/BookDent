@@ -78,7 +78,6 @@ onMounted(async () => {
       <BaseSpinner v-if="loading" />
 
       <template v-else>
-        <!-- PATIENT -->
         <template v-if="auth.role === 'PATIENT'">
           <div class="stats">
             <StatTile icon="calendar" label="Prossimi appuntamenti" :value="upcoming.length" />
@@ -132,7 +131,6 @@ onMounted(async () => {
           </section>
         </template>
 
-        <!-- DOCTOR -->
         <template v-else-if="auth.role === 'DOCTOR'">
           <div class="stats">
             <StatTile icon="calendar" label="Appuntamenti oggi" :value="todayCount" />
