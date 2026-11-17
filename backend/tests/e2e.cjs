@@ -1,4 +1,4 @@
-// Test end-to-end delle API di Smart Dental Care.
+// Test end-to-end delle API di BookDent-FlashCare.
 // Richiede il backend in esecuzione su un DATABASE DI TEST (vedi README, sezione "Test"):
 // lo script crea utenti, prestazioni e appuntamenti con nomi univoci a ogni esecuzione.
 // Uso: npm run test:e2e   (API_URL di default: http://localhost:3999)
@@ -72,7 +72,7 @@ const at = (day, hhmm) => new Date(`${day}T${hhmm}:00`).toISOString();
   let r = await api('GET', '/api/health');
   check(
     'health returns new name',
-    r.status === 200 && r.data.status === 'Smart Dental Care API running',
+    r.status === 200 && r.data.status === 'BookDent-FlashCare API running',
     r.data
   );
   r = await api('GET', '/api/nope');

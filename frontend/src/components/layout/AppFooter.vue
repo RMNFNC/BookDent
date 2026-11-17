@@ -9,11 +9,18 @@ const year = new Date().getFullYear();
     <div class="container footer__inner">
       <div class="footer__brand">
         <span class="footer__brand-icon"><IconBase name="tooth" :size="16" /></span>
-        Smart Dental Care
+        BookDent-FlashCare
       </div>
       <p class="footer__note">
-        © {{ year }} Smart Dental Care · Il tuo sorriso digitale · Prenotazioni e referti online per
+        © {{ year }} BookDent-FlashCare · Il tuo sorriso digitale · Prenotazioni e referti online per
         il tuo studio dentistico
+      </p>
+      <p class="footer__disclaimer" role="note">
+        <IconBase name="info" :size="14" />
+        <span>
+          Progetto a esclusivo scopo didattico. BookDent-FlashCare è un’azienda di fantasia: non
+          esiste uno studio reale con questo nome e tutti i dati presenti sono fittizi.
+        </span>
       </p>
     </div>
   </footer>
@@ -53,6 +60,24 @@ const year = new Date().getFullYear();
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.footer__disclaimer {
+  flex-basis: 100%;
+  margin: 0;
+  padding-top: 12px;
+  border-top: 1px dashed var(--color-border);
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: var(--color-text-muted);
+}
+
+.footer__disclaimer :deep(svg) {
+  flex-shrink: 0;
+  margin-top: 2px;
 }
 
 .footer__note {

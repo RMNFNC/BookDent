@@ -1,7 +1,7 @@
 import axios, { AxiosError, type InternalAxiosRequestConfig } from 'axios';
 import { tokenStorage } from './tokenStorage';
 
-export const AUTH_LOGOUT_EVENT = 'dentalcare:auth-logout';
+export const AUTH_LOGOUT_EVENT = 'bookdent:auth-logout';
 
 const baseURL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000/api';
 

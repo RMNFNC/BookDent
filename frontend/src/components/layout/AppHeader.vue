@@ -88,7 +88,7 @@ const handleLogout = () => {
     <div class="header__bar container">
       <RouterLink to="/" class="header__brand">
         <span class="header__brand-icon"><IconBase name="tooth" :size="20" /></span>
-        <span>Smart Dental Care</span>
+        <span>BookDent-FlashCare</span>
       </RouterLink>
 
       <nav class="header__nav header__nav--desktop" aria-label="Principale">
