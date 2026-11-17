@@ -1,6 +1,9 @@
-# Smart Dental Care — Documentazione tecnica
+# BookDent-FlashCare — Documentazione tecnica
 
-Questo documento spiega **come è costruita e come funziona** l'applicazione Smart Dental Care: il database, il backend, il frontend e soprattutto **come sono collegati tra loro**. Non descrive ogni singolo file riga per riga: spiega **cosa fa ogni tipologia di file** (es. "tutti i file `*.routes.ts` fanno questo"), approfondendo i punti in cui sta la logica importante.
+> [!NOTE]
+> Progetto a esclusivo scopo didattico: BookDent-FlashCare è un'azienda di fantasia e tutti i dati dell'applicazione sono fittizi.
+
+Questo documento spiega **come è costruita e come funziona** l'applicazione BookDent-FlashCare: il database, il backend, il frontend e soprattutto **come sono collegati tra loro**. Non descrive ogni singolo file riga per riga: spiega **cosa fa ogni tipologia di file** (es. "tutti i file `*.routes.ts` fanno questo"), approfondendo i punti in cui sta la logica importante.
 
 Per installazione e avvio vedi il [README](../README.md#avvio-del-progetto).
 
@@ -27,7 +30,7 @@ L'applicazione è composta da **tre strati** separati che comunicano in catena:
 flowchart LR
     U[Browser dell'utente] -->|"pagine Vue (SPA)"| F[Frontend<br/>Vue 3 · :5173]
     F -->|"HTTP + JSON<br/>Authorization: Bearer JWT"| B[Backend<br/>Express · :3000/api]
-    B -->|"query tramite Prisma Client"| D[(PostgreSQL<br/>database dentalcare)]
+    B -->|"query tramite Prisma Client"| D[(PostgreSQL<br/>database bookdent_flashcare)]
 ```
 
 | Strato | Tecnologia | Cartella | Responsabilità |
@@ -228,7 +231,7 @@ Vantaggio: la logica di business (service) è indipendente da Express, quindi è
 3. Registra i middleware globali:
    - `cors({ origin: corsOrigins })`: consente al frontend (che gira su un'altra porta, quindi su un'altra "origine") di chiamare le API. Sono ammesse solo le origini elencate in `CORS_ORIGIN` (separate da virgola, default `http://localhost:5173`): il browser blocca le chiamate da qualunque altro sito;
    - `express.json()`: converte il body JSON delle richieste in un oggetto JavaScript disponibile in `req.body`.
-4. Definisce `GET /api/health`, un endpoint di controllo che risponde `{ status: 'Smart Dental Care API running' }`.
+4. Definisce `GET /api/health`, un endpoint di controllo che risponde `{ status: 'BookDent-FlashCare API running' }`.
 5. Monta la documentazione Swagger su `/api/docs`, salvo `SWAGGER_ENABLED=false`.
 6. **Monta i router**, ciascuno su un prefisso:
 
@@ -627,7 +630,7 @@ Il frontend è una **SPA (Single Page Application)**: il browser scarica **una s
    - importa il CSS globale (`styles/base.css`);
    - registra **Pinia** (lo stato globale) e il **router**;
    - se nel browser c'è già una sessione salvata, ricarica il profilo con `auth.loadProfile()`. Se fallisce (ad esempio perché l'utente è stato cancellato) fa logout;
-   - si mette in ascolto dell'evento `dentalcare:auth-logout`, emesso da `client.ts` quando la sessione non è più rinnovabile. In quel caso fa logout e, se la pagina corrente richiede il login, porta l'utente su `/login`;
+   - si mette in ascolto dell'evento `bookdent:auth-logout`, emesso da `client.ts` quando la sessione non è più rinnovabile. In quel caso fa logout e, se la pagina corrente richiede il login, porta l'utente su `/login`;
    - monta l'app nel `<div id="app">`.
 3. **`App.vue`**: il **layout comune a tutte le pagine**: `AppHeader` in alto, `<RouterView />` al centro (dove il router inserisce la pagina corrente) e `AppFooter` in basso.
 
@@ -644,12 +647,12 @@ Crea un'istanza Axios (`apiClient`) con `baseURL` presa da `VITE_API_URL` (defau
   1. segna la richiesta con `_retry = true`, per non riprovarla all'infinito;
   2. chiama `POST /auth/refresh` con il refresh token. La variabile `refreshPromise` garantisce che, se più richieste falliscono contemporaneamente, il refresh venga fatto **una sola volta** e tutte attendano lo stesso risultato;
   3. salva il nuovo access token e **ripete la richiesta originale**: l'utente non si accorge di nulla;
-  4. se anche il refresh fallisce (ad esempio dopo 7 giorni), cancella la sessione ed emette l'evento `dentalcare:auth-logout`, raccolto da `main.ts`.
+  4. se anche il refresh fallisce (ad esempio dopo 7 giorni), cancella la sessione ed emette l'evento `bookdent:auth-logout`, raccolto da `main.ts`.
 - **`extractErrorMessage(error, fallback)`**: trasforma qualsiasi errore Axios in un messaggio leggibile. Se il backend ha inviato `errors` di validazione li unisce con `·`, altrimenti usa `message`; se non c'è nulla, usa il testo di fallback. Lo usano tutte le pagine per mostrare gli errori.
 
 #### `tokenStorage.ts`: persistenza della sessione
 
-Piccolo wrapper attorno al `localStorage` del browser, con le chiavi `dentalcare.accessToken`, `dentalcare.refreshToken` e `dentalcare.user`. Grazie al `localStorage` la sessione **sopravvive al ricaricamento della pagina**. Funzioni: `getAccessToken`, `getRefreshToken`, `getUser`, `setSession`, `setAccessToken`, `clear`.
+Piccolo wrapper attorno al `localStorage` del browser, con le chiavi `bookdent.accessToken`, `bookdent.refreshToken` e `bookdent.user`. Grazie al `localStorage` la sessione **sopravvive al ricaricamento della pagina**. Funzioni: `getAccessToken`, `getRefreshToken`, `getUser`, `setSession`, `setAccessToken`, `clear`.
 
 #### File per risorsa: `auth.ts`, `users.ts`, `services.ts`, `doctors.ts`, `appointments.ts`, `records.ts`
 

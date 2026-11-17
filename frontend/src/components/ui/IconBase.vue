@@ -142,6 +142,11 @@ withDefaults(defineProps<{ name: string; size?: number }>(), { size: 20 });
       <line x1="12" y1="9" x2="12" y2="14" />
       <line x1="12" y1="17" x2="12" y2="17.01" />
     </template>
+    <template v-else-if="name === 'info'">
+      <circle cx="12" cy="12" r="9" />
+      <line x1="12" y1="11" x2="12" y2="16" />
+      <line x1="12" y1="8" x2="12" y2="8.01" />
+    </template>
   </svg>
 </template>
 

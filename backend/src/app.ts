@@ -38,7 +38,7 @@ app.use(cors({ origin: corsOrigins }));
 app.use(express.json());
 
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'Smart Dental Care API running' });
+  res.json({ status: 'BookDent-FlashCare API running' });
 });
 
 if (swaggerEnabled) {

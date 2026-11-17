@@ -64,11 +64,11 @@ const features = [
     <section class="hero">
       <div class="container hero__inner">
         <div class="hero__copy">
-          <p class="hero__brand">Smart Dental Care</p>
+          <p class="hero__brand">BookDent-FlashCare</p>
           <span class="hero__eyebrow">Il tuo sorriso digitale</span>
           <h1>Prenota la tua visita in pochi click, senza pensare a chi te la farà.</h1>
           <p class="hero__lead">
-            Scegli la prestazione, il giorno e l’orario che preferisci: Smart Dental Care trova
+            Scegli la prestazione, il giorno e l’orario che preferisci: BookDent-FlashCare trova
             automaticamente un dentista disponibile per te. Referti e appuntamenti sempre
             consultabili online.
           </p>

@@ -1,6 +1,6 @@
-const ACCESS_TOKEN_KEY = 'dentalcare.accessToken';
-const REFRESH_TOKEN_KEY = 'dentalcare.refreshToken';
-const USER_KEY = 'dentalcare.user';
+const ACCESS_TOKEN_KEY = 'bookdent.accessToken';
+const REFRESH_TOKEN_KEY = 'bookdent.refreshToken';
+const USER_KEY = 'bookdent.user';
 
 export const tokenStorage = {
   getAccessToken: () => localStorage.getItem(ACCESS_TOKEN_KEY),

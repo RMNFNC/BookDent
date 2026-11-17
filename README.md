@@ -1,4 +1,7 @@
-# Smart Dental Care
+# BookDent-FlashCare
+
+> [!IMPORTANT]
+> **Progetto a esclusivo scopo didattico.** BookDent-FlashCare è un'azienda di fantasia: non esiste alcuno studio dentistico reale con questo nome e l'applicazione non offre servizi sanitari veri. Nomi, dottori, prestazioni, prezzi e dati presenti nel progetto sono inventati e servono solo a dimostrare il funzionamento del software. Non inserire dati personali o sanitari reali.
 
 Applicazione full-stack API-based per la gestione digitale di uno studio dentistico: prenotazione visite con assegnazione automatica del dentista, gestione referti medici e pannello amministrativo per dottori, prestazioni e appuntamenti.
 
@@ -21,12 +24,13 @@ Progetto sviluppato come esame per il corso di sviluppo full-stack, sulla tracci
 - [Test](#test)
 - [Documentazione API](#documentazione-api)
 - [Limiti noti e possibili sviluppi](#limiti-noti-e-possibili-sviluppi)
+- [Nota legale](#nota-legale)
 
 ## Come la traccia è stata soddisfatta
 
 | Requisito della traccia | Come è implementato |
 | --- | --- |
-| Impresa del settore sanitario | Studio dentistico (Smart Dental Care), con pazienti, dentisti e personale amministrativo |
+| Impresa del settore sanitario | Studio dentistico (BookDent-FlashCare), con pazienti, dentisti e personale amministrativo |
 | Servizio significativo | **Prenotazione visite** con assegnazione automatica del dentista disponibile + **gestione referti medici** post-visita |
 | Backend RESTful | API Express + TypeScript su risorse (`/auth`, `/users`, `/doctors`, `/services`, `/appointments`, `/records`), con verbi HTTP e status code coerenti, documentata in OpenAPI/Swagger |
 | Architettura moderna | Backend Node/Express + Prisma ORM su PostgreSQL, frontend Vue 3 + Pinia + Vue Router in TypeScript, comunicazione via API JSON, autenticazione stateless JWT |
@@ -34,7 +38,7 @@ Progetto sviluppato come esame per il corso di sviluppo full-stack, sulla tracci
 
 ## Funzionalità per ruolo
 
-Il sistema distingue tre ruoli (`PATIENT`, `DOCTOR`, `ADMIN`), ciascuno con le proprie viste e permessi lato API (vedi [dentalcare-usecase-uml.png](./dentalcare-usecase-uml.png)).
+Il sistema distingue tre ruoli (`PATIENT`, `DOCTOR`, `ADMIN`), ciascuno con le proprie viste e permessi lato API (vedi [bookdent-usecase-uml.png](./bookdent-usecase-uml.png)).
 
 **Paziente**
 - Registrazione e login
@@ -89,7 +93,7 @@ Frontend (Vue 3 SPA, :5173)  --->  Backend REST API (Express, :3000/api)  --->  
 
 ## Modello dati
 
-Vedi [dentalcare-er-diagram.png](./dentalcare-er-diagram.png) per lo schema entità-relazione completo (definito in [`backend/prisma/schema.prisma`](./backend/prisma/schema.prisma)).
+Vedi [bookdent-er-diagram.png](./bookdent-er-diagram.png) per lo schema entità-relazione completo (definito in [`backend/prisma/schema.prisma`](./backend/prisma/schema.prisma)).
 
 Entità principali:
 - **User** — account di autenticazione (email, password hash, ruolo)
@@ -131,8 +135,8 @@ DentalCare/
 │       ├── router/           # rotte e guardie per ruolo
 │       └── api/              # client Axios verso il backend
 ├── scripts/ensure-db.js      # verifica/avvio di PostgreSQL locale prima del dev server
-├── dentalcare-er-diagram.png
-├── dentalcare-usecase-uml.png
+├── bookdent-er-diagram.png
+├── bookdent-usecase-uml.png
 └── package.json              # script root per avviare backend + frontend insieme
 ```
 
@@ -166,7 +170,7 @@ cp frontend/.env.example frontend/.env
 
 | File | Variabile | Descrizione |
 | --- | --- | --- |
-| `backend/.env` | `DATABASE_URL` | Stringa di connessione PostgreSQL, es. `postgresql://postgres:<password>@localhost:5432/dentalcare` |
+| `backend/.env` | `DATABASE_URL` | Stringa di connessione PostgreSQL, es. `postgresql://postgres:<password>@localhost:5432/bookdent_flashcare` |
 | | `JWT_SECRET` | Chiave di firma dei token: stringa casuale di almeno 32 caratteri. Generala con `node -e "console.log(require('crypto').randomBytes(48).toString('base64url'))"` |
 | | `JWT_EXPIRES_IN` | Durata dell'access token (default `15m`) |
 | | `JWT_REFRESH_EXPIRES_IN` | Durata del refresh token (default `7d`) |
@@ -177,10 +181,10 @@ cp frontend/.env.example frontend/.env
 
 ### 3. Database e migrazioni (solo la prima volta e dopo ogni nuova migrazione)
 
-Con PostgreSQL avviato (vedi [Solo il database](#solo-il-database)), se il database `dentalcare` non esiste ancora crealo:
+Con PostgreSQL avviato (vedi [Solo il database](#solo-il-database)), se il database `bookdent_flashcare` non esiste ancora crealo:
 
 ```bash
-psql -U postgres -c "CREATE DATABASE dentalcare;"
+psql -U postgres -c "CREATE DATABASE bookdent_flashcare;"
 ```
 
 Poi applica le migrazioni e genera il client Prisma:
@@ -247,13 +251,13 @@ npm run db:ensure                # verifica che il DB risponda (e prova ad avvia
 
 ```bash
 # prima volta: crea e avvia il container
-docker run --name dentalcare-db -e POSTGRES_PASSWORD=password -e POSTGRES_DB=dentalcare -p 5432:5432 -d postgres:17
+docker run --name bookdent-db -e POSTGRES_PASSWORD=password -e POSTGRES_DB=bookdent_flashcare -p 5432:5432 -d postgres:17
 
-docker start dentalcare-db       # avvii successivi
-docker stop dentalcare-db        # ferma
+docker start bookdent-db       # avvii successivi
+docker stop bookdent-db        # ferma
 ```
 
-Con questa configurazione `DATABASE_URL` è quella di `backend/.env.example` (`postgresql://postgres:password@localhost:5432/dentalcare`).
+Con questa configurazione `DATABASE_URL` è quella di `backend/.env.example` (`postgresql://postgres:password@localhost:5432/bookdent_flashcare`).
 
 **Consultare e gestire i dati** (dalla cartella `backend/`):
 
@@ -261,7 +265,7 @@ Con questa configurazione `DATABASE_URL` è quella di `backend/.env.example` (`p
 npx prisma studio                # interfaccia web sui dati: http://localhost:5555
 npx prisma migrate status        # verifica che le migrazioni siano allineate
 npx prisma migrate deploy        # applica le migrazioni mancanti
-psql -U postgres -d dentalcare   # console SQL
+psql -U postgres -d bookdent_flashcare   # console SQL
 ```
 
 `npx prisma migrate reset` cancella **tutti i dati** e ricrea lo schema da zero: usalo solo se vuoi ripartire da un database vuoto.
@@ -288,8 +292,8 @@ Il test end-to-end (`backend/tests/e2e.cjs`) esercita tutte le API reali: autent
 
 ```bash
 cd backend
-# PowerShell: $env:DATABASE_URL="postgresql://postgres:<password>@localhost:5432/dentalcare_test"
-export DATABASE_URL="postgresql://postgres:<password>@localhost:5432/dentalcare_test"
+# PowerShell: $env:DATABASE_URL="postgresql://postgres:<password>@localhost:5432/bookdent_flashcare_test"
+export DATABASE_URL="postgresql://postgres:<password>@localhost:5432/bookdent_flashcare_test"
 npx prisma migrate deploy          # crea/aggiorna il database di test
 npm run build
 PORT=3999 npm start                # in un secondo terminale, con lo stesso DATABASE_URL
@@ -314,3 +318,7 @@ Per una spiegazione dettagliata di come funzionano backend, frontend e database 
 - Le fasce orarie di disponibilità vanno mantenute aggiornate periodicamente da ciascun dentista tramite la pagina "Disponibilità" (come avviene realmente in uno studio professionale, che pianifica l'agenda mese per mese). Le API permettono di gestirle anche all'admin, ma nell'interfaccia la pagina è riservata ai dentisti.
 - Non esiste un seed iniziale: il primo account amministratore va creato manualmente (vedi [Primo accesso](#4-primo-accesso-creare-lamministratore)).
 - Possibili estensioni: notifiche email/SMS di conferma appuntamento, esportazione referti in PDF, dashboard economica con andamento incassi per l'admin.
+
+## Nota legale
+
+Questo repository è stato realizzato come progetto d'esame per un corso di sviluppo full-stack ed è destinato **unicamente a uso didattico**. "BookDent-FlashCare" è un marchio di fantasia creato per l'esercitazione: qualsiasi somiglianza con aziende, studi o persone reali è puramente casuale. Il software non è certificato per l'uso in ambito sanitario e non deve essere impiegato per gestire pazienti o dati clinici reali.
