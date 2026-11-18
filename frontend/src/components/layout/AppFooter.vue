@@ -12,8 +12,8 @@ const year = new Date().getFullYear();
         BookDent-FlashCare
       </div>
       <p class="footer__note">
-        © {{ year }} BookDent-FlashCare · Il tuo sorriso digitale · Prenotazioni e referti online per
-        il tuo studio dentistico
+        © {{ year }} BookDent-FlashCare · Il tuo sorriso digitale · Prenotazioni e referti online
+        per il tuo studio dentistico
       </p>
       <p class="footer__disclaimer" role="note">
         <IconBase name="info" :size="14" />
@@ -64,20 +64,25 @@ const year = new Date().getFullYear();
 
 .footer__disclaimer {
   flex-basis: 100%;
-  margin: 0;
-  padding-top: 12px;
-  border-top: 1px dashed var(--color-border);
+  margin: 4px 0 0;
+  padding: 10px 14px;
+  border: 1px solid var(--color-border-strong);
+  border-left: 3px solid var(--color-info);
+  border-radius: var(--radius-sm);
+  background: var(--color-info-bg);
   display: flex;
   align-items: flex-start;
-  gap: 6px;
-  font-size: 0.78rem;
+  gap: 8px;
+  font-size: 0.84rem;
+  font-weight: 500;
   line-height: 1.5;
-  color: var(--color-text-muted);
+  color: var(--color-text-secondary);
 }
 
 .footer__disclaimer :deep(svg) {
   flex-shrink: 0;
-  margin-top: 2px;
+  margin-top: 3px;
+  color: var(--color-info);
 }
 
 .footer__note {
