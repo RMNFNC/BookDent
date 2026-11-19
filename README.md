@@ -7,7 +7,7 @@ Applicazione full-stack API-based per la gestione digitale di uno studio dentist
 
 > *Il tuo sorriso digitale.*
 
-Progetto sviluppato come esame per il corso di sviluppo full-stack, sulla traccia:
+Progetto sviluppato come pw nel corso di informatica, sulla traccia:
 
 > Sviluppo di una applicazione full-stack API-based per un'organizzazione del settore sanitario, che fornisca un servizio significativo (es. prenotazione visite, gestione referti, dashboard economico/finanziarie) tramite un backend RESTful e un'interfaccia utente intuitiva.
 
